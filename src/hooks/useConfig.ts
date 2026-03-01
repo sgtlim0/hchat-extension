@@ -14,7 +14,7 @@ const DEFAULT_CONFIG: Config = {
   awsAccessKeyId: '',
   awsSecretAccessKey: '',
   awsRegion: 'us-east-1',
-  model: 'us.anthropic.claude-sonnet-4-20250514-v1:0',
+  model: 'us.anthropic.claude-sonnet-4-6',
   triggerWord: '@H',
 }
 

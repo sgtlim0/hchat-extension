@@ -6,7 +6,7 @@ import { Storage } from '../lib/storage'
 import { signRequest } from '../lib/aws-sigv4'
 
 const ALARM_PREFIX = 'hchat-task-'
-const DEFAULT_MODEL = 'us.anthropic.claude-sonnet-4-20250514-v1:0'
+const DEFAULT_MODEL = 'us.anthropic.claude-sonnet-4-6'
 const DEFAULT_REGION = 'us-east-1'
 
 // ── 설치/업데이트 시 알람 복원 ────────────────
