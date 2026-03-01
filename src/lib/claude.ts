@@ -17,7 +17,7 @@ export interface ChatOptions {
   onChunk?: (text: string) => void
 }
 
-const DEFAULT_MODEL = 'us.anthropic.claude-sonnet-4-6-v1:0'
+const DEFAULT_MODEL = 'us.anthropic.claude-sonnet-4-20250514-v1:0'
 const DEFAULT_REGION = 'us-east-1'
 
 /** base64 → UTF-8 string (브라우저에서 한글 등 멀티바이트 안전) */

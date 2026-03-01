@@ -27,7 +27,7 @@ export interface SwarmOptions {
   onAgentDone?: (result: SwarmResult) => void
 }
 
-const DEFAULT_MODEL = 'us.anthropic.claude-sonnet-4-6-v1:0'
+const DEFAULT_MODEL = 'us.anthropic.claude-sonnet-4-20250514-v1:0'
 const DEFAULT_REGION = 'us-east-1'
 
 const ORCHESTRATOR_PROMPT = `당신은 여러 전문 AI 에이전트들의 결과물을 종합하는 오케스트레이터입니다.

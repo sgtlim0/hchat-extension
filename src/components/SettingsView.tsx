@@ -28,7 +28,7 @@ export function SettingsView({ darkMode, onToggleDarkMode }: SettingsViewProps) 
     setTestResult(null)
     try {
       const region = draft.awsRegion || 'us-east-1'
-      const model = draft.model || 'us.anthropic.claude-sonnet-4-6-v1:0'
+      const model = draft.model || 'us.anthropic.claude-sonnet-4-20250514-v1:0'
       const bodyStr = JSON.stringify({
         anthropic_version: 'bedrock-2023-05-31',
         max_tokens: 10,
@@ -62,8 +62,8 @@ export function SettingsView({ darkMode, onToggleDarkMode }: SettingsViewProps) 
   }
 
   const models = [
-    { id: 'us.anthropic.claude-sonnet-4-6-v1:0', label: 'Claude Sonnet 4.6 (권장)' },
-    { id: 'us.anthropic.claude-opus-4-6-v1:0', label: 'Claude Opus 4.6 (최고 성능)' },
+    { id: 'us.anthropic.claude-sonnet-4-20250514-v1:0', label: 'Claude Sonnet 4 (권장)' },
+    { id: 'us.anthropic.claude-opus-4-20250514-v1:0', label: 'Claude Opus 4 (최고 성능)' },
     { id: 'us.anthropic.claude-haiku-4-5-20251001-v1:0', label: 'Claude Haiku 4.5 (빠름)' },
   ]
 
