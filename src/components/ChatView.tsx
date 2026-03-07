@@ -5,6 +5,7 @@ import { useSessionStore } from '@/entities/session/session.store'
 import { chat, type Message } from '../lib/claude'
 import { MemoryStore } from '../lib/memory'
 import { CommandPalette } from '@/widgets/command-palette/CommandPalette'
+import { ContextStack } from '@/widgets/context-stack/ContextStack'
 import { findCommand } from '@/widgets/command-palette/commands'
 import type { Command } from '@/widgets/command-palette/commands'
 import type { ChatMessage } from '@/entities/session/session.types'
@@ -240,6 +241,7 @@ export function ChatView({
       </div>
 
       <div className="chat-input-area">
+        <ContextStack onInsert={(text) => setInput((prev) => prev + text)} />
         {showPalette && (
           <CommandPalette input={input} visible={showPalette} onSelect={handleCommandSelect} />
         )}

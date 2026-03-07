@@ -99,8 +99,48 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
   }
 })
 
-// ── 아이콘 클릭 → 팝업 표시 (manifest default_popup) ──
-// default_popup이 설정되어 있으므로 onClicked는 사용하지 않음
+// ── 컨텍스트 스택 (최근 5개 탭 추적) ────────────
+const CONTEXT_STACK_KEY = 'hchat:context-stack'
+const MAX_CONTEXT = 5
+
+interface TabContext {
+  tabId: number
+  url: string
+  title: string
+  timestamp: number
+}
+
+async function updateContextStack(tabId: number) {
+  try {
+    const tab = await chrome.tabs.get(tabId)
+    if (!tab.url || tab.url.startsWith('chrome://') || tab.url.startsWith('chrome-extension://')) return
+
+    const entry: TabContext = {
+      tabId,
+      url: tab.url,
+      title: tab.title ?? '',
+      timestamp: Date.now(),
+    }
+
+    const existing = (await Storage.get<TabContext[]>(CONTEXT_STACK_KEY)) ?? []
+    // 같은 URL 중복 제거 후 앞에 추가
+    const filtered = existing.filter((e) => e.url !== entry.url)
+    const stack = [entry, ...filtered].slice(0, MAX_CONTEXT)
+    await Storage.set(CONTEXT_STACK_KEY, stack)
+  } catch {
+    // 탭이 이미 닫힌 경우 무시
+  }
+}
+
+chrome.tabs.onActivated.addListener(({ tabId }) => {
+  updateContextStack(tabId)
+})
+
+chrome.tabs.onUpdated.addListener((tabId, changeInfo) => {
+  if (changeInfo.status === 'complete') {
+    updateContextStack(tabId)
+  }
+})
 
 // ── 메시지 라우터 ─────────────────────────────
 chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
@@ -114,6 +154,14 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
       })
     }
     return
+  }
+
+  // 컨텍스트 스택 조회
+  if (msg.type === 'get-context-stack') {
+    Storage.get<TabContext[]>(CONTEXT_STACK_KEY).then((stack) => {
+      sendResponse(stack ?? [])
+    })
+    return true
   }
 
   // 사이드패널/팝업에서 현재 탭의 페이지 텍스트 요청

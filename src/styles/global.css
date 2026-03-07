@@ -1169,6 +1169,45 @@ body {
   font-family: inherit; outline: none;
 }
 
+/* ── Context Stack ──────────────────────────── */
+.context-stack { margin-bottom: 4px; }
+.context-toggle {
+  display: flex; align-items: center; gap: 6px;
+  padding: 4px 8px; border: none; background: transparent;
+  cursor: pointer; font-family: inherit; font-size: 11px;
+  color: var(--text-tertiary); transition: color 0.1s; width: 100%;
+}
+.context-toggle:hover { color: var(--text-secondary); }
+.context-toggle-icon { font-size: 13px; }
+.context-toggle-arrow { margin-left: auto; font-size: 10px; }
+.context-items {
+  display: flex; flex-direction: column; gap: 2px;
+  padding: 4px 0; max-height: 160px; overflow-y: auto;
+}
+.context-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px; border: none; background: transparent;
+  cursor: pointer; font-family: inherit; text-align: left;
+  transition: background 0.1s; border-radius: 4px; margin: 0 4px; width: calc(100% - 8px);
+}
+.context-item:hover { background: var(--bg3); }
+.context-item-info { flex: 1; min-width: 0; }
+.context-item-title {
+  font-size: 11px; font-weight: 500; color: var(--text);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: block;
+}
+.context-item-domain {
+  font-size: 9px; color: var(--text-tertiary); margin-top: 1px;
+  display: block;
+}
+.context-item-use {
+  font-size: 9px; color: var(--primary); font-weight: 600;
+  padding: 2px 6px; border-radius: 3px; background: var(--primary-dim);
+  white-space: nowrap; opacity: 0; transition: opacity 0.1s;
+}
+.context-item:hover .context-item-use { opacity: 1; }
+
 /* ── Command Palette ────────────────────────── */
 .command-palette {
   position: absolute; bottom: 100%; left: 0; right: 0;

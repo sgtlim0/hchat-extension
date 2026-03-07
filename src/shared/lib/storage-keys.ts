@@ -11,4 +11,5 @@ export const STORAGE_KEYS = {
   PENDING_PROMPT: 'hchat:fab-pending',
   FOCUS_INPUT: 'hchat:focus-input',
   SCHEMA_VERSION: 'hchat:schema-version',
+  CONTEXT_STACK: 'hchat:context-stack',
 } as const
