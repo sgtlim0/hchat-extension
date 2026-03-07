@@ -1,26 +1,37 @@
-// components/ChatView.tsx
+// components/ChatView.tsx — Zustand 연동 채팅 뷰 + 슬래시 명령어
+
 import { useState, useRef, useEffect } from 'react'
-import { useChat, type ChatMessage } from '../hooks/useChat'
-import type { Config } from '../hooks/useConfig'
+import { useSessionStore } from '@/entities/session/session.store'
+import { chat, type Message } from '../lib/claude'
+import { MemoryStore } from '../lib/memory'
+import { CommandPalette } from '@/widgets/command-palette/CommandPalette'
+import { findCommand } from '@/widgets/command-palette/commands'
+import type { Command } from '@/widgets/command-palette/commands'
+import type { ChatMessage } from '@/entities/session/session.types'
 
 interface ChatViewProps {
   conversationId: string
-  config: Config
+  config: {
+    awsAccessKeyId: string
+    awsSecretAccessKey: string
+    awsRegion: string
+    model: string
+    triggerWord: string
+  }
   pendingPrompt?: string
   onPendingConsumed?: () => void
+  onCommandAction?: (action: string) => void
 }
 
 function MessageBubble({ msg }: { msg: ChatMessage }) {
   const isUser = msg.role === 'user'
   return (
     <div className={`msg ${isUser ? 'msg-user' : 'msg-ai'}`}>
-      {!isUser && (
-        <div className="msg-avatar">H</div>
-      )}
+      {!isUser && <div className="msg-avatar">H</div>}
       <div className="msg-body">
         <div className="msg-content">
           {msg.content}
-          {msg.streaming && <span className="cursor-blink">▌</span>}
+          {msg.streaming && <span className="cursor-blink">|</span>}
         </div>
         <div className="msg-time">
           {new Date(msg.ts).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}
@@ -40,21 +51,37 @@ function getModelDisplayName(modelId: string): string {
   if (modelId.includes('claude-sonnet-4')) return 'Claude Sonnet 4'
   if (modelId.includes('claude-opus-4')) return 'Claude Opus 4'
   if (modelId.includes('claude-haiku')) return 'Claude Haiku'
-  if (modelId.includes('claude-sonnet')) return 'Claude Sonnet'
   return modelId.split('.').pop()?.split(':')[0] ?? modelId
 }
 
-export function ChatView({ conversationId, config, pendingPrompt, onPendingConsumed }: ChatViewProps) {
-  const { messages, isLoading, error, sendMessage, clearMessages } = useChat(conversationId, config)
+export function ChatView({
+  conversationId,
+  config,
+  pendingPrompt,
+  onPendingConsumed,
+  onCommandAction,
+}: ChatViewProps) {
+  const currentSession = useSessionStore((s) => s.currentSession)
+  const addMessage = useSessionStore((s) => s.addMessage)
+  const updateMessage = useSessionStore((s) => s.updateMessage)
+  const removeMessage = useSessionStore((s) => s.removeMessage)
+  const clearMessages = useSessionStore((s) => s.clearMessages)
+  const persist = useSessionStore((s) => s.persist)
+
   const [input, setInput] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState('')
   const endRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLTextAreaElement>(null)
 
+  const session = currentSession()
+  const messages = session?.messages ?? []
+  const hasCredentials = !!(config.awsAccessKeyId && config.awsSecretAccessKey)
+
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: 'smooth' })
-  }, [messages])
+  }, [messages.length, messages[messages.length - 1]?.content])
 
-  // FAB/Popup에서 받은 pending prompt 자동 전송
   useEffect(() => {
     if (pendingPrompt && !isLoading) {
       sendMessage(pendingPrompt)
@@ -62,22 +89,90 @@ export function ChatView({ conversationId, config, pendingPrompt, onPendingConsu
     }
   }, [pendingPrompt]) // eslint-disable-line react-hooks/exhaustive-deps
 
+  const sendMessage = async (userText: string) => {
+    if (!userText.trim() || !hasCredentials || isLoading) return
+
+    const cmdResult = findCommand(userText)
+    if (cmdResult) {
+      const { command, args } = cmdResult
+      if (command.noSend && command.action) {
+        onCommandAction?.(command.action)
+        return
+      }
+      userText = command.buildPrompt(args)
+      if (!userText.trim()) return
+    }
+
+    setError('')
+
+    const userMsg: ChatMessage = {
+      id: crypto.randomUUID(),
+      role: 'user',
+      content: userText,
+      ts: Date.now(),
+    }
+    const assistantId = crypto.randomUUID()
+    const assistantMsg: ChatMessage = {
+      id: assistantId,
+      role: 'assistant',
+      content: '',
+      ts: Date.now(),
+      streaming: true,
+    }
+
+    addMessage(userMsg)
+    addMessage(assistantMsg)
+    setIsLoading(true)
+
+    try {
+      const systemPrompt =
+        '당신은 도움이 되는 AI 어시스턴트입니다.' +
+        (await MemoryStore.toSystemPrompt(conversationId))
+
+      const history: Message[] = messages
+        .filter((m) => m.content.trim() !== '')
+        .map(({ role, content }) => ({ role, content }))
+      history.push({ role: 'user', content: userText })
+
+      await chat(history, {
+        awsAccessKeyId: config.awsAccessKeyId,
+        awsSecretAccessKey: config.awsSecretAccessKey,
+        awsRegion: config.awsRegion,
+        model: config.model,
+        systemPrompt,
+        onChunk: (chunk) => {
+          const store = useSessionStore.getState()
+          const current = store.currentSession()
+          const existing = current?.messages.find((m) => m.id === assistantId)
+          updateMessage(assistantId, {
+            content: (existing?.content ?? '') + chunk,
+          })
+        },
+      })
+
+      updateMessage(assistantId, { streaming: false })
+      persist()
+    } catch (err) {
+      setError(String(err))
+      removeMessage(assistantId)
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const handleSuggestion = async (s: { text: string; action: string }) => {
     if (s.action === 'summarize') {
-      // background에 페이지 텍스트 요청
       try {
         const pageData = await chrome.runtime.sendMessage({ type: 'get-page-text' }) as {
           text: string; title: string; url: string
         } | undefined
-
         if (pageData?.text) {
-          const prompt = `[페이지: ${pageData.title}]\n[URL: ${pageData.url}]\n\n다음 웹페이지 내용을 한국어로 요약해줘:\n\n${pageData.text}`
-          await sendMessage(prompt)
+          await sendMessage(
+            `[페이지: ${pageData.title}]\n[URL: ${pageData.url}]\n\n다음 웹페이지 내용을 한국어로 요약해줘:\n\n${pageData.text}`
+          )
           return
         }
-      } catch {
-        // 페이지 텍스트 가져오기 실패 시 기본 텍스트로 전송
-      }
+      } catch { /* fallback */ }
     }
     await sendMessage(s.text)
   }
@@ -97,6 +192,18 @@ export function ChatView({ conversationId, config, pendingPrompt, onPendingConsu
     }
   }
 
+  const handleCommandSelect = (cmd: Command) => {
+    if (cmd.noSend && cmd.action) {
+      onCommandAction?.(cmd.action)
+      setInput('')
+    } else {
+      setInput(cmd.name + ' ')
+      inputRef.current?.focus()
+    }
+  }
+
+  const showPalette = input.startsWith('/') && input.length > 0 && !isLoading
+
   return (
     <div className="chat-view">
       <div className="chat-messages">
@@ -105,7 +212,7 @@ export function ChatView({ conversationId, config, pendingPrompt, onPendingConsu
             <div className="chat-empty-logo">H</div>
             <div className="chat-empty-title">무엇이든 물어보세요</div>
             <div className="chat-empty-sub">
-              {'AI와 대화하고, 페이지를 분석하고,\n코드 리뷰를 받아보세요'}
+              {'AI와 대화하고, 페이지를 분석하고,\n코드 리뷰를 받아보세요\n\n/ 를 입력하면 명령어를 사용할 수 있어요'}
             </div>
             <div className="chat-suggestions">
               {suggestions.map((s) => (
@@ -121,7 +228,9 @@ export function ChatView({ conversationId, config, pendingPrompt, onPendingConsu
             {messages.map((msg) => <MessageBubble key={msg.id} msg={msg} />)}
             {messages.length > 0 && (
               <div style={{ display: 'flex', justifyContent: 'center', paddingTop: 4 }}>
-                <button className="btn-ghost btn-xs" onClick={clearMessages}>대화 초기화</button>
+                <button className="btn-ghost btn-xs" onClick={() => { clearMessages(); persist() }}>
+                  대화 초기화
+                </button>
               </div>
             )}
           </>
@@ -131,6 +240,9 @@ export function ChatView({ conversationId, config, pendingPrompt, onPendingConsu
       </div>
 
       <div className="chat-input-area">
+        {showPalette && (
+          <CommandPalette input={input} visible={showPalette} onSelect={handleCommandSelect} />
+        )}
         <div className="chat-input-row">
           <textarea
             ref={inputRef}
@@ -138,7 +250,7 @@ export function ChatView({ conversationId, config, pendingPrompt, onPendingConsu
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="메시지 입력..."
+            placeholder="메시지 입력... (/ 로 명령어)"
             rows={1}
             style={{ height: 'auto' }}
             onInput={(e) => {
@@ -147,11 +259,7 @@ export function ChatView({ conversationId, config, pendingPrompt, onPendingConsu
               t.style.height = Math.min(t.scrollHeight, 120) + 'px'
             }}
           />
-          <button
-            className="send-btn"
-            onClick={handleSend}
-            disabled={isLoading || !input.trim()}
-          >
+          <button className="send-btn" onClick={handleSend} disabled={isLoading || !input.trim()}>
             {isLoading ? (
               <span className="spinner" />
             ) : (

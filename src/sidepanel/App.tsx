@@ -1,16 +1,21 @@
-// sidepanel/App.tsx  –  사이드패널 메인 앱
+// sidepanel/App.tsx — 사이드패널 메인 앱 (Zustand + 멀티 세션)
+
 import { useState, useEffect, useCallback } from 'react'
+import { useSessionStore } from '@/entities/session/session.store'
+import { useConfigStore } from '@/entities/config/config.store'
 import { ChatView } from '../components/ChatView'
 import { MemoryPanel } from '../components/MemoryPanel'
 import { SchedulerPanel } from '../components/SchedulerPanel'
 import { SwarmPanel } from '../components/SwarmPanel'
 import { SettingsView } from '../components/SettingsView'
-import { useConfig } from '../hooks/useConfig'
+import { SessionList } from '@/widgets/session-list/SessionList'
+import { SearchPanel } from '@/widgets/search-panel/SearchPanel'
+import { ExportModal } from '@/widgets/export-modal/ExportModal'
+import { STORAGE_KEYS } from '@/shared/lib/storage-keys'
+import type { PendingPrompt } from '@/shared/types/chrome-messages'
 import '../styles/global.css'
 
 type Tab = 'chat' | 'memory' | 'scheduler' | 'swarm'
-
-const CONV_ID = 'hchat-main'
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'chat', label: '채팅' },
@@ -22,55 +27,67 @@ const tabs: { id: Tab; label: string }[] = [
 export function App() {
   const [tab, setTab] = useState<Tab>('chat')
   const [showSettings, setShowSettings] = useState(false)
-  const [darkMode, setDarkMode] = useState(false)
+  const [showSessions, setShowSessions] = useState(false)
+  const [showExport, setShowExport] = useState(false)
   const [pendingPrompt, setPendingPrompt] = useState('')
-  const { config, loaded } = useConfig()
 
+  // Zustand stores
+  const view = useSessionStore((s) => s.view)
+  const setView = useSessionStore((s) => s.setView)
+  const hydrateSession = useSessionStore((s) => s.hydrate)
+  const currentSessionId = useSessionStore((s) => s.currentSessionId)
+  const createSession = useSessionStore((s) => s.createSession)
+
+  const config = useConfigStore((s) => ({
+    awsAccessKeyId: s.awsAccessKeyId,
+    awsSecretAccessKey: s.awsSecretAccessKey,
+    awsRegion: s.awsRegion,
+    model: s.model,
+    triggerWord: s.triggerWord,
+  }))
+  const darkMode = useConfigStore((s) => s.darkMode)
+  const loaded = useConfigStore((s) => s.loaded)
+  const hydrateConfig = useConfigStore((s) => s.hydrate)
+  const updateConfig = useConfigStore((s) => s.updateConfig)
+
+  // Hydration
   useEffect(() => {
-    chrome.storage.local.get('hchat:config:darkMode', (r) => {
-      const isDark = !!r['hchat:config:darkMode']
-      setDarkMode(isDark)
-      document.documentElement.classList.toggle('dark', isDark)
-    })
-  }, [])
+    Promise.all([hydrateConfig(), hydrateSession()])
+  }, [hydrateConfig, hydrateSession])
 
-  // FAB/Popup에서 보낸 pending prompt 감지
+  // FAB/Popup pending prompt 감지
   const checkPendingPrompt = useCallback(() => {
-    chrome.storage.local.get('hchat:fab-pending', (r) => {
-      const pending = r['hchat:fab-pending']
+    chrome.storage.local.get(STORAGE_KEYS.PENDING_PROMPT, (r) => {
+      const pending = r[STORAGE_KEYS.PENDING_PROMPT] as PendingPrompt | undefined
       if (!pending?.text) return
-
-      // 5초 이내의 pending만 처리
       if (Date.now() - pending.ts > 5000) {
-        chrome.storage.local.remove('hchat:fab-pending')
+        chrome.storage.local.remove(STORAGE_KEYS.PENDING_PROMPT)
         return
       }
-
       setPendingPrompt(pending.text)
       setTab('chat')
       setShowSettings(false)
-      chrome.storage.local.remove('hchat:fab-pending')
+      setShowSessions(false)
+      setView('chat')
+      chrome.storage.local.remove(STORAGE_KEYS.PENDING_PROMPT)
     })
-  }, [])
+  }, [setView])
 
   useEffect(() => {
-    // 초기 로드 시 체크
     checkPendingPrompt()
-
-    // storage 변경 감지 (FAB에서 새 prompt가 들어올 때)
     const listener = (changes: Record<string, chrome.storage.StorageChange>) => {
-      if (changes['hchat:fab-pending']?.newValue) {
-        checkPendingPrompt()
-      }
+      if (changes[STORAGE_KEYS.PENDING_PROMPT]?.newValue) checkPendingPrompt()
     }
     chrome.storage.local.onChanged.addListener(listener)
     return () => chrome.storage.local.onChanged.removeListener(listener)
   }, [checkPendingPrompt])
 
-  useEffect(() => {
-    document.documentElement.classList.toggle('dark', darkMode)
-    chrome.storage.local.set({ 'hchat:config:darkMode': darkMode })
-  }, [darkMode])
+  // 슬래시 명령어 액션 핸들러
+  const handleCommandAction = useCallback((action: string) => {
+    if (action === 'new-session') createSession()
+    if (action === 'search') setView('search')
+    if (action === 'export') setShowExport(true)
+  }, [createSession, setView])
 
   if (!loaded) {
     return (
@@ -82,6 +99,7 @@ export function App() {
 
   const hasCredentials = !!(config.awsAccessKeyId && config.awsSecretAccessKey)
 
+  // 자격증명 미설정 시
   if (!hasCredentials && !showSettings) {
     return (
       <div className="app">
@@ -110,6 +128,7 @@ export function App() {
     )
   }
 
+  // 설정 화면
   if (showSettings) {
     return (
       <div className="app">
@@ -123,7 +142,21 @@ export function App() {
         </div>
         <div className="divider" />
         <div className="content">
-          <SettingsView darkMode={darkMode} onToggleDarkMode={() => setDarkMode((d) => !d)} />
+          <SettingsView
+            darkMode={darkMode}
+            onToggleDarkMode={() => updateConfig({ darkMode: !darkMode })}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // 검색 뷰
+  if (view === 'search') {
+    return (
+      <div className="app">
+        <div className="content">
+          <SearchPanel />
         </div>
       </div>
     )
@@ -131,17 +164,37 @@ export function App() {
 
   return (
     <div className="app">
+      {/* Header */}
       <div className="header">
-        <div className="header-logo">H</div>
+        <button className="header-btn" onClick={() => setShowSessions(!showSessions)} title="대화 목록">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+          </svg>
+        </button>
         <span className="header-title">H Chat</span>
         <div className="header-spacer" />
-        <button className="header-btn" onClick={() => setShowSettings(true)}>
+        <button className="header-btn" onClick={() => setView('search')} title="검색">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+        </button>
+        <button className="header-btn" onClick={() => setShowSettings(true)} title="설정">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
         </button>
       </div>
 
+      {/* Session List Overlay */}
+      {showSessions && (
+        <div className="session-overlay" onClick={() => setShowSessions(false)}>
+          <div className="session-drawer" onClick={(e) => e.stopPropagation()}>
+            <SessionList />
+          </div>
+        </div>
+      )}
+
+      {/* Tab Bar */}
       <div className="tab-bar">
         {tabs.map((t) => (
           <button
@@ -153,22 +206,26 @@ export function App() {
           </button>
         ))}
       </div>
-
       <div className="divider" />
 
+      {/* Content */}
       <div className="content" style={tab === 'chat' ? { display: 'flex', flexDirection: 'column' } : {}}>
-        {tab === 'chat' && (
+        {tab === 'chat' && currentSessionId && (
           <ChatView
-            conversationId={CONV_ID}
+            conversationId={currentSessionId}
             config={config}
             pendingPrompt={pendingPrompt}
             onPendingConsumed={() => setPendingPrompt('')}
+            onCommandAction={handleCommandAction}
           />
         )}
-        {tab === 'memory' && <MemoryPanel conversationId={CONV_ID} />}
-        {tab === 'scheduler' && <SchedulerPanel conversationId={CONV_ID} />}
+        {tab === 'memory' && currentSessionId && <MemoryPanel conversationId={currentSessionId} />}
+        {tab === 'scheduler' && currentSessionId && <SchedulerPanel conversationId={currentSessionId} />}
         {tab === 'swarm' && <SwarmPanel config={config} />}
       </div>
+
+      {/* Export Modal */}
+      {showExport && <ExportModal onClose={() => setShowExport(false)} />}
     </div>
   )
 }
