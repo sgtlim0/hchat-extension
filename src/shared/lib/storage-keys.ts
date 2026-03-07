@@ -14,4 +14,5 @@ export const STORAGE_KEYS = {
   CONTEXT_STACK: 'hchat:context-stack',
   HIGHLIGHTS_PREFIX: 'hchat:highlights:',
   CLIPBOARD_HISTORY: 'hchat:clipboard-history',
+  KNOWLEDGE: 'hchat:knowledge',
 } as const

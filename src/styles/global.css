@@ -1855,6 +1855,309 @@ body {
 }
 .social-hashtag-chip:hover { opacity: 0.75; }
 
+/* ── More Menu Divider ───────────────────────── */
+.more-menu-divider {
+  height: 1px; background: var(--border); margin: 4px 0;
+}
+
+/* ── Phase 4: Screenshot AI ─────────────────── */
+.screenshot-actions { padding: 12px; }
+.screenshot-preview {
+  padding: 0 12px 8px; text-align: center;
+}
+.screenshot-img {
+  max-width: 100%; max-height: 200px;
+  border-radius: 6px; border: 1px solid var(--border);
+  object-fit: contain;
+}
+.screenshot-prompt-section { padding: 0 12px 8px; }
+.screenshot-result-box {
+  margin: 8px 12px; padding: 10px; border-radius: 8px;
+  background: var(--bg-card); border: 1px solid var(--border);
+}
+.screenshot-result-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.screenshot-result-label {
+  font-size: 11px; font-weight: 600; color: var(--text-secondary);
+}
+.screenshot-result-content {
+  font-size: 12px; color: var(--text-primary); line-height: 1.6;
+  white-space: pre-wrap; word-break: break-word;
+}
+
+/* ── Phase 4: Voice I/O ─────────────────────── */
+.voice-section { padding: 12px; }
+.voice-section-title {
+  font-size: 12px; font-weight: 700; color: var(--text-primary);
+  margin-bottom: 10px;
+}
+.voice-divider {
+  height: 1px; background: var(--border); margin: 4px 12px;
+}
+.voice-lang-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.voice-label {
+  font-size: 11px; color: var(--text-secondary); white-space: nowrap;
+}
+.voice-lang-btns { display: flex; gap: 4px; }
+.voice-lang-btn {
+  padding: 3px 10px; border-radius: 999px; font-size: 11px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-secondary); cursor: pointer;
+  transition: all 0.15s;
+}
+.voice-lang-btn:hover { border-color: var(--primary); color: var(--primary); }
+.voice-lang-active {
+  background: var(--primary-dim); border-color: var(--primary);
+  color: var(--primary); font-weight: 600;
+}
+.voice-record-area { margin-bottom: 10px; }
+.voice-record-btn {
+  display: flex; align-items: center; gap: 8px; width: 100%;
+  padding: 10px 16px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg-card);
+  color: var(--text-primary); cursor: pointer; font-size: 12px;
+  transition: all 0.15s;
+}
+.voice-record-btn:hover { border-color: var(--primary); }
+.voice-record-active {
+  border-color: var(--danger); background: rgba(239, 68, 68, 0.06);
+}
+.voice-record-dot {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: var(--danger);
+  animation: voice-blink 1s infinite;
+}
+@keyframes voice-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+.voice-result-box {
+  margin-top: 8px; padding: 10px; border-radius: 8px;
+  background: var(--bg-card); border: 1px solid var(--border);
+}
+.voice-result-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.voice-result-label {
+  font-size: 11px; font-weight: 600; color: var(--text-secondary);
+}
+.voice-result-content {
+  font-size: 12px; color: var(--text-primary); line-height: 1.5;
+}
+.voice-speed-row {
+  display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+}
+.voice-speed-slider {
+  flex: 1; height: 4px; accent-color: var(--primary);
+}
+.voice-tts-actions { margin-top: 8px; }
+
+/* ── Phase 4: Prompt Chain ──────────────────── */
+.chain-presets {
+  padding: 8px 12px; display: flex; align-items: center;
+  gap: 6px; flex-wrap: wrap;
+}
+.chain-presets-label {
+  font-size: 11px; color: var(--text-secondary); font-weight: 600;
+}
+.chain-steps { padding: 0 12px; }
+.chain-step {
+  margin-bottom: 4px;
+}
+.chain-step-header {
+  display: flex; align-items: center; gap: 6px; margin-bottom: 4px;
+}
+.chain-step-status {
+  font-size: 14px; line-height: 1; min-width: 16px; text-align: center;
+}
+.chain-step-name {
+  flex: 1; padding: 4px 8px; border-radius: 4px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-primary); font-size: 11px; font-weight: 600;
+  font-family: var(--font-sans);
+}
+.chain-step-name:focus { border-color: var(--primary); outline: none; }
+.chain-step-remove {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-tertiary); font-size: 16px; line-height: 1;
+  padding: 0 4px;
+}
+.chain-step-remove:hover { color: var(--danger); }
+.chain-step-prompt {
+  font-size: 11px !important; min-height: 40px !important;
+}
+.chain-step-result { margin-top: 4px; }
+.chain-step-result-toggle {
+  display: flex; align-items: center; gap: 4px;
+  background: none; border: none; cursor: pointer;
+  color: var(--text-secondary); font-size: 11px;
+  padding: 2px 0;
+}
+.chain-step-result-toggle:hover { color: var(--primary); }
+.chain-step-result-label { font-weight: 500; }
+.chain-step-result-content {
+  margin-top: 4px; padding: 8px; border-radius: 6px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  font-size: 11px; color: var(--text-primary); line-height: 1.5;
+  white-space: pre-wrap; word-break: break-word;
+  max-height: 200px; overflow-y: auto;
+}
+.chain-connector {
+  display: flex; justify-content: center; padding: 2px 0;
+}
+.btn-ghost.btn-full {
+  width: 100%; text-align: center; margin: 4px 12px;
+  box-sizing: border-box;
+}
+
+/* ── Phase 4: Knowledge Base ────────────────── */
+.knowledge-add { padding: 12px; }
+.knowledge-topics {
+  padding: 4px 12px 8px; display: flex; gap: 4px; flex-wrap: wrap;
+}
+.knowledge-topic-chip {
+  padding: 3px 8px; border-radius: 999px;
+  border: 1px solid var(--border); background: transparent;
+  color: var(--text-secondary); cursor: pointer; font-size: 10px;
+  transition: all 0.15s;
+}
+.knowledge-topic-chip:hover { border-color: var(--primary); color: var(--primary); }
+.knowledge-topic-active {
+  background: var(--primary-dim); border-color: var(--primary);
+  color: var(--primary); font-weight: 600;
+}
+.knowledge-item {
+  margin: 4px 12px; padding: 10px; border-radius: 8px;
+  border: 1px solid var(--border); cursor: pointer;
+  transition: all 0.15s;
+}
+.knowledge-item:hover { border-color: var(--primary-light); }
+.knowledge-item-selected {
+  border-color: var(--primary); background: var(--primary-dim);
+}
+.knowledge-item-header {
+  display: flex; align-items: flex-start; justify-content: space-between; gap: 8px;
+}
+.knowledge-item-title {
+  font-size: 12px; font-weight: 600; color: var(--text-primary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1;
+}
+.knowledge-item-remove {
+  background: none; border: none; cursor: pointer;
+  color: var(--text-tertiary); font-size: 14px; line-height: 1;
+  padding: 0 2px;
+}
+.knowledge-item-remove:hover { color: var(--danger); }
+.knowledge-item-url {
+  font-size: 10px; color: var(--text-tertiary); margin-top: 2px;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.knowledge-item-topics {
+  display: flex; gap: 4px; margin-top: 6px; flex-wrap: wrap;
+}
+.knowledge-item-topic-tag {
+  padding: 2px 6px; border-radius: 999px;
+  background: var(--primary-dim); color: var(--primary);
+  font-size: 10px; font-weight: 500;
+}
+.knowledge-item-summary {
+  font-size: 11px; color: var(--text-secondary);
+  margin-top: 6px; line-height: 1.4;
+}
+.knowledge-item-date {
+  font-size: 10px; color: var(--text-tertiary); margin-top: 4px;
+}
+.knowledge-related {
+  margin: 8px 12px; padding: 10px; border-radius: 8px;
+  background: var(--bg-card); border: 1px solid var(--border);
+}
+.knowledge-related-title {
+  font-size: 11px; font-weight: 700; color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.knowledge-related-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 0; border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.knowledge-related-item:last-child { border-bottom: none; }
+.knowledge-related-item:hover { opacity: 0.75; }
+.knowledge-related-item-title {
+  font-size: 11px; font-weight: 500; color: var(--text-primary);
+}
+.knowledge-related-item-topics {
+  font-size: 10px; color: var(--text-tertiary);
+}
+
+/* ── Phase 4: Agent Tools ───────────────────── */
+.agent-input-section { padding: 12px; }
+.agent-tools-info {
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  margin: 6px 0 8px;
+}
+.agent-tools-label {
+  font-size: 10px; color: var(--text-tertiary);
+}
+.agent-tool-tag {
+  padding: 2px 6px; border-radius: 4px;
+  background: var(--bg-card); border: 1px solid var(--border);
+  font-size: 10px; font-family: var(--font-mono); color: var(--text-secondary);
+}
+.agent-log {
+  margin: 8px 12px; padding: 10px; border-radius: 8px;
+  background: var(--bg-card); border: 1px solid var(--border);
+}
+.agent-log-title {
+  font-size: 11px; font-weight: 700; color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.agent-log-entry {
+  padding: 6px 0; border-bottom: 1px solid var(--border);
+}
+.agent-log-entry:last-child { border-bottom: none; }
+.agent-log-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 4px;
+}
+.agent-log-tool {
+  font-size: 11px; font-weight: 600; color: var(--primary);
+  font-family: var(--font-mono);
+}
+.agent-log-step {
+  font-size: 10px; color: var(--text-tertiary);
+}
+.agent-log-row {
+  display: flex; gap: 6px; margin-top: 2px;
+}
+.agent-log-label {
+  font-size: 10px; font-weight: 600; color: var(--text-tertiary);
+  min-width: 40px;
+}
+.agent-log-value {
+  font-size: 10px; color: var(--text-secondary); line-height: 1.4;
+  word-break: break-word;
+}
+.agent-answer {
+  margin: 8px 12px; padding: 10px; border-radius: 8px;
+  background: var(--bg-card); border: 1px solid var(--primary);
+}
+.agent-answer-header {
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 6px;
+}
+.agent-answer-label {
+  font-size: 11px; font-weight: 700; color: var(--primary);
+}
+.agent-answer-content {
+  font-size: 12px; color: var(--text-primary); line-height: 1.6;
+  white-space: pre-wrap; word-break: break-word;
+}
+
 /* ── Scrollbars ──────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }

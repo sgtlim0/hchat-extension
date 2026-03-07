@@ -20,12 +20,17 @@ import { EmailPanel } from '@/widgets/email-panel/EmailPanel'
 import { CodeReviewPanel } from '@/widgets/code-review-panel/CodeReviewPanel'
 import { PdfPanel } from '@/widgets/pdf-panel/PdfPanel'
 import { SocialPanel } from '@/widgets/social-panel/SocialPanel'
+import { ScreenshotPanel } from '@/widgets/screenshot-panel/ScreenshotPanel'
+import { VoicePanel } from '@/widgets/voice-panel/VoicePanel'
+import { ChainPanel } from '@/widgets/chain-panel/ChainPanel'
+import { KnowledgePanel } from '@/widgets/knowledge-panel/KnowledgePanel'
+import { AgentPanel } from '@/widgets/agent-panel/AgentPanel'
 import { STORAGE_KEYS } from '@/shared/lib/storage-keys'
 import type { PendingPrompt } from '@/shared/types/chrome-messages'
 import '../styles/global.css'
 
 type Tab = 'chat' | 'memory' | 'scheduler' | 'swarm'
-type ToolView = 'highlight' | 'reading' | 'translate' | 'clipboard' | 'youtube' | 'email' | 'codeReview' | 'pdf' | 'social' | null
+type ToolView = 'highlight' | 'reading' | 'translate' | 'clipboard' | 'youtube' | 'email' | 'codeReview' | 'pdf' | 'social' | 'screenshot' | 'voice' | 'chain' | 'knowledge' | 'agentTool' | null
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'chat', label: '채팅' },
@@ -212,6 +217,11 @@ export function App() {
           {toolView === 'codeReview' && <CodeReviewPanel onClose={() => setToolView(null)} />}
           {toolView === 'pdf' && <PdfPanel onClose={() => setToolView(null)} />}
           {toolView === 'social' && <SocialPanel onClose={() => setToolView(null)} />}
+          {toolView === 'screenshot' && <ScreenshotPanel onClose={() => setToolView(null)} />}
+          {toolView === 'voice' && <VoicePanel onClose={() => setToolView(null)} />}
+          {toolView === 'chain' && <ChainPanel onClose={() => setToolView(null)} />}
+          {toolView === 'knowledge' && <KnowledgePanel onClose={() => setToolView(null)} />}
+          {toolView === 'agentTool' && <AgentPanel onClose={() => setToolView(null)} />}
         </div>
       </div>
     )
@@ -279,6 +289,27 @@ export function App() {
                 <button className="more-menu-item" onClick={() => { setToolView('social'); setShowMore(false) }}>
                   <span className="more-menu-item-icon">&#128227;</span>
                   <span>Social Media</span>
+                </button>
+                <div className="more-menu-divider" />
+                <button className="more-menu-item" onClick={() => { setToolView('screenshot'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#128247;</span>
+                  <span>Screenshot AI</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('voice'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#127908;</span>
+                  <span>Voice I/O</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('chain'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#128279;</span>
+                  <span>Prompt Chain</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('knowledge'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#128218;</span>
+                  <span>Knowledge Base</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('agentTool'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#129302;</span>
+                  <span>Agent Tools</span>
                 </button>
               </div>
             </>

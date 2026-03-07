@@ -221,6 +221,49 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true
   }
 
+  // 스크린샷 캡처
+  if (msg.type === 'capture-screenshot') {
+    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+      const tabId = tabs[0]?.id
+      if (!tabId) {
+        sendResponse({ error: 'No active tab' })
+        return
+      }
+      try {
+        const dataUrl = await chrome.tabs.captureVisibleTab(
+          undefined as unknown as number,
+          { format: 'png' }
+        )
+        sendResponse({ dataUrl })
+      } catch (err) {
+        sendResponse({ error: err instanceof Error ? err.message : 'Capture failed' })
+      }
+    })
+    return true
+  }
+
+  // 웹 검색 (에이전트 도구용)
+  if (msg.type === 'web-search') {
+    const query = msg.query ?? ''
+    // DuckDuckGo instant answer API (간이 검색)
+    fetch(`https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1`)
+      .then((res) => res.json())
+      .then((data) => {
+        const results: string[] = []
+        if (data.AbstractText) results.push(data.AbstractText)
+        if (data.RelatedTopics) {
+          for (const topic of data.RelatedTopics.slice(0, 5)) {
+            if (topic.Text) results.push(topic.Text)
+          }
+        }
+        sendResponse({ results: results.join('\n\n') || `No instant results for "${query}"` })
+      })
+      .catch(() => {
+        sendResponse({ results: `Search failed for "${query}"` })
+      })
+    return true
+  }
+
   // 사이드패널/팝업에서 현재 탭의 페이지 텍스트 요청
   if (msg.type === 'get-page-text') {
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
