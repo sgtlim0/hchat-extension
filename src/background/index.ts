@@ -164,6 +164,63 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true
   }
 
+  // YouTube 자막 추출
+  if (msg.type === 'get-youtube-captions') {
+    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+      const tab = tabs[0]
+      const tabId = tab?.id
+      const tabUrl = tab?.url ?? ''
+
+      if (!tabId || !tabUrl.includes('youtube.com/watch')) {
+        sendResponse({ isYouTube: false, title: '', captions: '' })
+        return
+      }
+
+      try {
+        const results = await chrome.scripting.executeScript({
+          target: { tabId },
+          func: () => {
+            const title = document.title.replace(/ - YouTube$/, '')
+            // Try to extract transcript text from the page
+            // Method 1: Look for transcript panel text
+            const transcriptItems = document.querySelectorAll(
+              'ytd-transcript-segment-renderer .segment-text, ' +
+              'yt-formatted-string.segment-text'
+            )
+            if (transcriptItems.length > 0) {
+              const captions = Array.from(transcriptItems)
+                .map((el) => (el as HTMLElement).innerText.trim())
+                .filter(Boolean)
+                .join(' ')
+              return { title, captions: captions.slice(0, 8000) }
+            }
+            // Method 2: Extract from video description and main content
+            const descEl = document.querySelector(
+              'ytd-text-inline-expander #plain-snippet-text, ' +
+              'ytd-text-inline-expander .content, ' +
+              '#description-inline-expander'
+            )
+            const desc = descEl ? (descEl as HTMLElement).innerText.trim() : ''
+            // Method 3: Get all text from the info section
+            const infoEl = document.querySelector('#above-the-fold, #info-contents')
+            const info = infoEl ? (infoEl as HTMLElement).innerText.trim() : ''
+            const combined = [desc, info].filter(Boolean).join('\n\n')
+            return { title, captions: combined.slice(0, 8000) }
+          },
+        })
+        const data = results[0]?.result
+        sendResponse({
+          isYouTube: true,
+          title: data?.title ?? '',
+          captions: data?.captions ?? '',
+        })
+      } catch {
+        sendResponse({ isYouTube: true, title: '', captions: '' })
+      }
+    })
+    return true
+  }
+
   // 사이드패널/팝업에서 현재 탭의 페이지 텍스트 요청
   if (msg.type === 'get-page-text') {
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {

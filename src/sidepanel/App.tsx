@@ -15,12 +15,17 @@ import { HighlightPanel } from '@/widgets/highlight-panel/HighlightPanel'
 import { ReadingMode } from '@/widgets/reading-mode/ReadingMode'
 import { TranslatePanel } from '@/widgets/translate-panel/TranslatePanel'
 import { ClipboardPanel } from '@/widgets/clipboard-panel/ClipboardPanel'
+import { YouTubePanel } from '@/widgets/youtube-panel/YouTubePanel'
+import { EmailPanel } from '@/widgets/email-panel/EmailPanel'
+import { CodeReviewPanel } from '@/widgets/code-review-panel/CodeReviewPanel'
+import { PdfPanel } from '@/widgets/pdf-panel/PdfPanel'
+import { SocialPanel } from '@/widgets/social-panel/SocialPanel'
 import { STORAGE_KEYS } from '@/shared/lib/storage-keys'
 import type { PendingPrompt } from '@/shared/types/chrome-messages'
 import '../styles/global.css'
 
 type Tab = 'chat' | 'memory' | 'scheduler' | 'swarm'
-type ToolView = 'highlight' | 'reading' | 'translate' | 'clipboard' | null
+type ToolView = 'highlight' | 'reading' | 'translate' | 'clipboard' | 'youtube' | 'email' | 'codeReview' | 'pdf' | 'social' | null
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'chat', label: '채팅' },
@@ -36,6 +41,7 @@ export function App() {
   const [showExport, setShowExport] = useState(false)
   const [pendingPrompt, setPendingPrompt] = useState('')
   const [toolView, setToolView] = useState<ToolView>(null)
+  const [showMore, setShowMore] = useState(false)
 
   // Zustand stores
   const view = useSessionStore((s) => s.view)
@@ -108,6 +114,7 @@ export function App() {
         setView('search')
       }
       if (e.key === 'Escape') {
+        if (showMore) { setShowMore(false); return }
         if (toolView) { setToolView(null); return }
         if (showSettings) { setShowSettings(false); return }
         if (showSessions) { setShowSessions(false); return }
@@ -116,7 +123,7 @@ export function App() {
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [createSession, setView, toolView, showSettings, showSessions, showExport])
+  }, [createSession, setView, toolView, showMore, showSettings, showSessions, showExport])
 
   if (!loaded) {
     return (
@@ -200,6 +207,11 @@ export function App() {
           {toolView === 'reading' && <ReadingMode onClose={() => setToolView(null)} />}
           {toolView === 'translate' && <TranslatePanel onClose={() => setToolView(null)} />}
           {toolView === 'clipboard' && <ClipboardPanel onClose={() => setToolView(null)} />}
+          {toolView === 'youtube' && <YouTubePanel onClose={() => setToolView(null)} />}
+          {toolView === 'email' && <EmailPanel onClose={() => setToolView(null)} />}
+          {toolView === 'codeReview' && <CodeReviewPanel onClose={() => setToolView(null)} />}
+          {toolView === 'pdf' && <PdfPanel onClose={() => setToolView(null)} />}
+          {toolView === 'social' && <SocialPanel onClose={() => setToolView(null)} />}
         </div>
       </div>
     )
@@ -237,6 +249,41 @@ export function App() {
             <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
           </svg>
         </button>
+        {/* More tools menu */}
+        <div className="more-menu-wrapper">
+          <button className="header-btn" onClick={() => setShowMore(!showMore)} title="More tools">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="1" /><circle cx="19" cy="12" r="1" /><circle cx="5" cy="12" r="1" />
+            </svg>
+          </button>
+          {showMore && (
+            <>
+              <div className="more-menu-backdrop" onClick={() => setShowMore(false)} />
+              <div className="more-menu-dropdown">
+                <button className="more-menu-item" onClick={() => { setToolView('youtube'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#9654;</span>
+                  <span>YouTube Analysis</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('email'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#9993;</span>
+                  <span>Email Writer</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('codeReview'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#60;/&#62;</span>
+                  <span>Code Review</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('pdf'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#128196;</span>
+                  <span>PDF Analysis</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('social'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#128227;</span>
+                  <span>Social Media</span>
+                </button>
+              </div>
+            </>
+          )}
+        </div>
         <button className="header-btn" onClick={() => setView('search')} title="검색 (Ctrl+F)">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
