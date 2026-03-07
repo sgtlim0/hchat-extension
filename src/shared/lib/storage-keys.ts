@@ -12,4 +12,6 @@ export const STORAGE_KEYS = {
   FOCUS_INPUT: 'hchat:focus-input',
   SCHEMA_VERSION: 'hchat:schema-version',
   CONTEXT_STACK: 'hchat:context-stack',
+  HIGHLIGHTS_PREFIX: 'hchat:highlights:',
+  CLIPBOARD_HISTORY: 'hchat:clipboard-history',
 } as const

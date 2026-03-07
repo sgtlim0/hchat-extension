@@ -1301,6 +1301,174 @@ body {
   color: var(--text-secondary); white-space: pre-wrap; word-break: break-word;
 }
 
+/* ── Highlight Panel ─────────────────────────── */
+.highlight-add-form {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.highlight-add-row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.highlight-colors { display: flex; gap: 4px; }
+.highlight-color-btn {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid transparent; cursor: pointer;
+  transition: border-color 0.15s;
+}
+.highlight-color-btn:hover { border-color: var(--text-secondary); }
+.highlight-color-active { border-color: var(--text-primary) !important; }
+
+.highlight-list { display: flex; flex-direction: column; gap: 6px; }
+.highlight-item {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-left: 3px solid; border-radius: 8px;
+  padding: 8px 10px; display: flex; flex-direction: column; gap: 4px;
+}
+.highlight-text {
+  font-size: 12px; color: var(--text-primary);
+  line-height: 1.5; word-break: break-word;
+}
+.highlight-note {
+  font-size: 11px; color: var(--text-secondary);
+  font-style: italic; padding-left: 8px;
+  border-left: 2px solid var(--border);
+}
+.highlight-note-edit { display: flex; flex-direction: column; gap: 4px; }
+.highlight-note-actions { display: flex; gap: 4px; }
+.highlight-meta {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; color: var(--text-tertiary);
+}
+.highlight-date { font-family: var(--font-mono); }
+.highlight-url {
+  font-size: 9px; color: var(--primary);
+  max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.highlight-actions { margin-left: auto; display: flex; gap: 4px; }
+
+/* ── Reading Mode ────────────────────────────── */
+.reading-info {
+  display: flex; flex-direction: column; gap: 4px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.reading-title {
+  font-size: 14px; font-weight: 600; color: var(--text-primary);
+  line-height: 1.4;
+}
+.reading-meta {
+  display: flex; gap: 10px; font-size: 10px;
+  color: var(--text-tertiary); font-family: var(--font-mono);
+}
+
+.reading-summary-section {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.reading-summary-box {
+  background: var(--bg-card); border: 1px solid rgba(52, 120, 254, 0.2);
+  border-radius: 8px; overflow: hidden;
+}
+.reading-summary-label {
+  padding: 6px 10px; background: var(--primary-dim);
+  font-size: 11px; font-weight: 600; color: var(--primary);
+  font-family: var(--font-mono);
+  border-bottom: 1px solid rgba(52, 120, 254, 0.12);
+}
+.reading-summary-content {
+  padding: 10px; font-size: 12px; color: var(--text-primary);
+  line-height: 1.7; white-space: pre-wrap; word-break: break-word;
+}
+
+.reading-body {
+  font-size: 12px; color: var(--text-primary);
+  line-height: 1.8; white-space: pre-wrap; word-break: break-word;
+  max-height: 600px; overflow-y: auto;
+  scrollbar-width: thin; scrollbar-color: var(--bg4) transparent;
+}
+
+/* ── Translate Panel ─────────────────────────── */
+.translate-input-section {
+  display: flex; flex-direction: column; gap: 6px;
+}
+
+.translate-result-box {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; overflow: hidden;
+}
+.translate-result-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 10px; background: var(--bg-hover);
+  border-bottom: 1px solid var(--border);
+}
+.translate-result-label {
+  font-size: 11px; font-weight: 600; color: var(--primary);
+  font-family: var(--font-mono);
+}
+.translate-result-content {
+  padding: 10px; font-size: 12px; color: var(--text-primary);
+  line-height: 1.7; white-space: pre-wrap; word-break: break-word;
+}
+
+.translate-history {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.translate-history-title {
+  font-size: 11px; font-weight: 600; color: var(--text-secondary);
+  text-transform: uppercase; letter-spacing: 0.04em;
+}
+.translate-history-item {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 8px; border: none; background: transparent;
+  cursor: pointer; font-family: inherit; text-align: left;
+  border-radius: 6px; transition: background 0.1s; width: 100%;
+}
+.translate-history-item:hover { background: var(--bg-hover); }
+.translate-history-dir {
+  font-size: 9px; font-weight: 600; color: var(--primary);
+  font-family: var(--font-mono); flex-shrink: 0;
+  background: var(--primary-dim); padding: 2px 6px; border-radius: 4px;
+}
+.translate-history-text {
+  font-size: 11px; color: var(--text-secondary);
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+
+/* ── Clipboard Panel ─────────────────────────── */
+.clipboard-add { display: flex; flex-direction: column; gap: 4px; }
+.clipboard-add-row { display: flex; gap: 6px; align-items: center; }
+.clipboard-add-row .field-input { flex: 1; }
+
+.clipboard-list { display: flex; flex-direction: column; gap: 6px; }
+.clipboard-item {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: 8px; padding: 8px 10px;
+  display: flex; flex-direction: column; gap: 4px;
+}
+.clipboard-item-text {
+  font-size: 12px; color: var(--text-primary);
+  line-height: 1.5; word-break: break-word;
+}
+.clipboard-item-meta {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 10px; color: var(--text-tertiary);
+}
+.clipboard-item-time { font-family: var(--font-mono); }
+
+.clipboard-process-row {
+  display: flex; gap: 4px; padding-top: 2px;
+}
+
+.clipboard-result {
+  background: var(--bg-hover); border-radius: 6px;
+  padding: 8px; display: flex; flex-direction: column; gap: 4px;
+}
+.clipboard-result-label {
+  font-size: 10px; font-weight: 600; color: var(--primary);
+  font-family: var(--font-mono);
+}
+.clipboard-result-text {
+  font-size: 11px; color: var(--text-primary);
+  line-height: 1.5; white-space: pre-wrap; word-break: break-word;
+}
+
 /* ── Scrollbars ──────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }

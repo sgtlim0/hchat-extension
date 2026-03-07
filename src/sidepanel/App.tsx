@@ -11,11 +11,16 @@ import { SettingsView } from '../components/SettingsView'
 import { SessionList } from '@/widgets/session-list/SessionList'
 import { SearchPanel } from '@/widgets/search-panel/SearchPanel'
 import { ExportModal } from '@/widgets/export-modal/ExportModal'
+import { HighlightPanel } from '@/widgets/highlight-panel/HighlightPanel'
+import { ReadingMode } from '@/widgets/reading-mode/ReadingMode'
+import { TranslatePanel } from '@/widgets/translate-panel/TranslatePanel'
+import { ClipboardPanel } from '@/widgets/clipboard-panel/ClipboardPanel'
 import { STORAGE_KEYS } from '@/shared/lib/storage-keys'
 import type { PendingPrompt } from '@/shared/types/chrome-messages'
 import '../styles/global.css'
 
 type Tab = 'chat' | 'memory' | 'scheduler' | 'swarm'
+type ToolView = 'highlight' | 'reading' | 'translate' | 'clipboard' | null
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'chat', label: '채팅' },
@@ -30,6 +35,7 @@ export function App() {
   const [showSessions, setShowSessions] = useState(false)
   const [showExport, setShowExport] = useState(false)
   const [pendingPrompt, setPendingPrompt] = useState('')
+  const [toolView, setToolView] = useState<ToolView>(null)
 
   // Zustand stores
   const view = useSessionStore((s) => s.view)
@@ -88,6 +94,29 @@ export function App() {
     if (action === 'search') setView('search')
     if (action === 'export') setShowExport(true)
   }, [createSession, setView])
+
+  // 사이드패널 내 키보드 단축키
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const mod = e.metaKey || e.ctrlKey
+      if (mod && e.key === 'n') {
+        e.preventDefault()
+        createSession()
+      }
+      if (mod && e.key === 'f') {
+        e.preventDefault()
+        setView('search')
+      }
+      if (e.key === 'Escape') {
+        if (toolView) { setToolView(null); return }
+        if (showSettings) { setShowSettings(false); return }
+        if (showSessions) { setShowSessions(false); return }
+        if (showExport) { setShowExport(false); return }
+      }
+    }
+    window.addEventListener('keydown', handler)
+    return () => window.removeEventListener('keydown', handler)
+  }, [createSession, setView, toolView, showSettings, showSessions, showExport])
 
   if (!loaded) {
     return (
@@ -162,6 +191,20 @@ export function App() {
     )
   }
 
+  // 도구 뷰 (highlight, reading, translate, clipboard)
+  if (toolView) {
+    return (
+      <div className="app">
+        <div className="content">
+          {toolView === 'highlight' && <HighlightPanel onClose={() => setToolView(null)} />}
+          {toolView === 'reading' && <ReadingMode onClose={() => setToolView(null)} />}
+          {toolView === 'translate' && <TranslatePanel onClose={() => setToolView(null)} />}
+          {toolView === 'clipboard' && <ClipboardPanel onClose={() => setToolView(null)} />}
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="app">
       {/* Header */}
@@ -173,13 +216,34 @@ export function App() {
         </button>
         <span className="header-title">H Chat</span>
         <div className="header-spacer" />
-        <button className="header-btn" onClick={() => setView('search')} title="검색">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        {/* Tool buttons */}
+        <button className="header-btn" onClick={() => setToolView('highlight')} title="Highlights">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/>
+          </svg>
+        </button>
+        <button className="header-btn" onClick={() => setToolView('reading')} title="Reading Mode">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>
+          </svg>
+        </button>
+        <button className="header-btn" onClick={() => setToolView('translate')} title="Translate">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+        </button>
+        <button className="header-btn" onClick={() => setToolView('clipboard')} title="Clipboard">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+          </svg>
+        </button>
+        <button className="header-btn" onClick={() => setView('search')} title="검색 (Ctrl+F)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
           </svg>
         </button>
         <button className="header-btn" onClick={() => setShowSettings(true)} title="설정">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3" /><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
           </svg>
         </button>
@@ -200,7 +264,7 @@ export function App() {
           <button
             key={t.id}
             className={`tab-pill ${tab === t.id ? 'tab-pill-active' : ''}`}
-            onClick={() => setTab(t.id)}
+            onClick={() => { setTab(t.id); setToolView(null) }}
           >
             {t.label}
           </button>

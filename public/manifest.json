@@ -50,6 +50,16 @@
     }
   ],
 
+  "commands": {
+    "_execute_side_panel": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+H",
+        "mac": "Command+Shift+H"
+      },
+      "description": "Open H Chat side panel"
+    }
+  },
+
   "content_security_policy": {
     "extension_pages": "script-src 'self'; object-src 'self'"
   }
