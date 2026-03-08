@@ -37,6 +37,9 @@ import { MiniWidgets } from '@/widgets/mini-widgets/MiniWidgets'
 import { TabOrganizer } from '@/widgets/tab-organizer/TabOrganizer'
 import { DigestPanel } from '@/widgets/digest-panel/DigestPanel'
 import { TutorPanel } from '@/widgets/tutor-panel/TutorPanel'
+import { AutopilotPanel } from '@/widgets/autopilot-panel/AutopilotPanel'
+import { ResearchPanel } from '@/widgets/research-panel/ResearchPanel'
+import { AnnotatePanel } from '@/widgets/annotate-panel/AnnotatePanel'
 import { useUsageStore } from '@/entities/usage/usage.store'
 import { useAuditStore } from '@/entities/audit/audit.store'
 import { useTemplateStore } from '@/entities/template/template.store'
@@ -46,7 +49,7 @@ import type { PendingPrompt } from '@/shared/types/chrome-messages'
 import '../styles/global.css'
 
 type Tab = 'chat' | 'memory' | 'scheduler' | 'swarm'
-type ToolView = 'highlight' | 'reading' | 'translate' | 'clipboard' | 'youtube' | 'email' | 'codeReview' | 'pdf' | 'social' | 'screenshot' | 'voice' | 'chain' | 'knowledge' | 'agentTool' | 'usage' | 'audit' | 'sync' | 'templates' | 'providers' | 'codeVault' | 'persona' | 'watcher' | 'miniWidgets' | 'tabOrganizer' | 'digest' | 'tutor' | null
+type ToolView = 'highlight' | 'reading' | 'translate' | 'clipboard' | 'youtube' | 'email' | 'codeReview' | 'pdf' | 'social' | 'screenshot' | 'voice' | 'chain' | 'knowledge' | 'agentTool' | 'usage' | 'audit' | 'sync' | 'templates' | 'providers' | 'codeVault' | 'persona' | 'watcher' | 'miniWidgets' | 'tabOrganizer' | 'digest' | 'tutor' | 'autopilot' | 'research' | 'annotate' | null
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'chat', label: '채팅' },
@@ -257,6 +260,9 @@ export function App() {
           {toolView === 'tabOrganizer' && <TabOrganizer onClose={() => setToolView(null)} />}
           {toolView === 'digest' && <DigestPanel onClose={() => setToolView(null)} />}
           {toolView === 'tutor' && <TutorPanel onClose={() => setToolView(null)} />}
+          {toolView === 'autopilot' && <AutopilotPanel onClose={() => setToolView(null)} />}
+          {toolView === 'research' && <ResearchPanel onClose={() => setToolView(null)} />}
+          {toolView === 'annotate' && <AnnotatePanel onClose={() => setToolView(null)} />}
         </div>
       </div>
     )
@@ -399,6 +405,18 @@ export function App() {
                 <button className="more-menu-item" onClick={() => { setToolView('tutor'); setShowMore(false) }}>
                   <span className="more-menu-item-icon">&#127891;</span>
                   <span>AI Tutor</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('autopilot'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#9881;</span>
+                  <span>Web Autopilot</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('research'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#128269;</span>
+                  <span>Multi-Tab Research</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('annotate'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#9998;</span>
+                  <span>Annotate</span>
                 </button>
               </div>
             </>
