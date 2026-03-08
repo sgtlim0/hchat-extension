@@ -20,4 +20,7 @@ export const STORAGE_KEYS = {
   TEMPLATES: 'hchat:templates',
   CODE_VAULT: 'hchat:code-vault',
   PERSONAS: 'hchat:personas',
+  WATCHERS: 'hchat:watchers',
+  DIGEST_DATA: 'hchat:digest-data',
+  DIGEST_SETTINGS: 'hchat:digest-settings',
 } as const

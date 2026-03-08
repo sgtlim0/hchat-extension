@@ -32,6 +32,11 @@ import { TemplatePanel } from '@/widgets/template-panel/TemplatePanel'
 import { ProviderPanel } from '@/widgets/provider-panel/ProviderPanel'
 import { CodeVaultPanel } from '@/widgets/code-vault/CodeVault'
 import { PersonaPanel } from '@/widgets/persona-panel/PersonaPanel'
+import { WatcherPanel } from '@/widgets/watcher-panel/WatcherPanel'
+import { MiniWidgets } from '@/widgets/mini-widgets/MiniWidgets'
+import { TabOrganizer } from '@/widgets/tab-organizer/TabOrganizer'
+import { DigestPanel } from '@/widgets/digest-panel/DigestPanel'
+import { TutorPanel } from '@/widgets/tutor-panel/TutorPanel'
 import { useUsageStore } from '@/entities/usage/usage.store'
 import { useAuditStore } from '@/entities/audit/audit.store'
 import { useTemplateStore } from '@/entities/template/template.store'
@@ -41,7 +46,7 @@ import type { PendingPrompt } from '@/shared/types/chrome-messages'
 import '../styles/global.css'
 
 type Tab = 'chat' | 'memory' | 'scheduler' | 'swarm'
-type ToolView = 'highlight' | 'reading' | 'translate' | 'clipboard' | 'youtube' | 'email' | 'codeReview' | 'pdf' | 'social' | 'screenshot' | 'voice' | 'chain' | 'knowledge' | 'agentTool' | 'usage' | 'audit' | 'sync' | 'templates' | 'providers' | 'codeVault' | 'persona' | null
+type ToolView = 'highlight' | 'reading' | 'translate' | 'clipboard' | 'youtube' | 'email' | 'codeReview' | 'pdf' | 'social' | 'screenshot' | 'voice' | 'chain' | 'knowledge' | 'agentTool' | 'usage' | 'audit' | 'sync' | 'templates' | 'providers' | 'codeVault' | 'persona' | 'watcher' | 'miniWidgets' | 'tabOrganizer' | 'digest' | 'tutor' | null
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'chat', label: '채팅' },
@@ -247,6 +252,11 @@ export function App() {
           {toolView === 'providers' && <ProviderPanel onClose={() => setToolView(null)} />}
           {toolView === 'codeVault' && <CodeVaultPanel onClose={() => setToolView(null)} />}
           {toolView === 'persona' && <PersonaPanel onClose={() => setToolView(null)} />}
+          {toolView === 'watcher' && <WatcherPanel onClose={() => setToolView(null)} />}
+          {toolView === 'miniWidgets' && <MiniWidgets onClose={() => setToolView(null)} />}
+          {toolView === 'tabOrganizer' && <TabOrganizer onClose={() => setToolView(null)} />}
+          {toolView === 'digest' && <DigestPanel onClose={() => setToolView(null)} />}
+          {toolView === 'tutor' && <TutorPanel onClose={() => setToolView(null)} />}
         </div>
       </div>
     )
@@ -368,6 +378,27 @@ export function App() {
                 <button className="more-menu-item" onClick={() => { setToolView('persona'); setShowMore(false) }}>
                   <span className="more-menu-item-icon">&#128100;</span>
                   <span>Persona Switch</span>
+                </button>
+                <div className="more-menu-section-label">Bonus</div>
+                <button className="more-menu-item" onClick={() => { setToolView('watcher'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#128065;</span>
+                  <span>Page Watcher</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('miniWidgets'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#127922;</span>
+                  <span>Mini Widgets</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('tabOrganizer'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#128193;</span>
+                  <span>Tab Organizer</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('digest'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#128240;</span>
+                  <span>Daily Digest</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('tutor'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#127891;</span>
+                  <span>AI Tutor</span>
                 </button>
               </div>
             </>
