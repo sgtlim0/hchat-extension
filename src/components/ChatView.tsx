@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { useSessionStore } from '@/entities/session/session.store'
 import { chat, type Message } from '../lib/claude'
+import { useUsageStore, estimateTokens } from '@/entities/usage/usage.store'
+import { useAuditStore } from '@/entities/audit/audit.store'
 import { MemoryStore } from '../lib/memory'
 import { CommandPalette } from '@/widgets/command-palette/CommandPalette'
 import { ContextStack } from '@/widgets/context-stack/ContextStack'
@@ -69,6 +71,9 @@ export function ChatView({
   const clearMessages = useSessionStore((s) => s.clearMessages)
   const persist = useSessionStore((s) => s.persist)
 
+  const recordUsage = useUsageStore((s) => s.recordUsage)
+  const addAuditLog = useAuditStore((s) => s.addLog)
+
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -124,6 +129,7 @@ export function ChatView({
     addMessage(userMsg)
     addMessage(assistantMsg)
     setIsLoading(true)
+    const startTime = Date.now()
 
     try {
       const systemPrompt =
@@ -152,10 +158,40 @@ export function ChatView({
       })
 
       updateMessage(assistantId, { streaming: false })
+
+      // 사용량 및 감사 로그 기록
+      const store = useSessionStore.getState()
+      const finalMsg = store.currentSession()?.messages.find((m) => m.id === assistantId)
+      const inputTokens = estimateTokens(userText)
+      const outputTokens = estimateTokens(finalMsg?.content ?? '')
+      const duration = Date.now() - startTime
+
+      recordUsage(config.model, inputTokens, outputTokens)
+      addAuditLog({
+        action: 'chat',
+        model: config.model,
+        inputTokens,
+        outputTokens,
+        sessionId: conversationId,
+        promptPreview: userText.slice(0, 100),
+        duration,
+        success: true,
+      })
+
       persist()
     } catch (err) {
       setError(String(err))
       removeMessage(assistantId)
+      addAuditLog({
+        action: 'chat',
+        model: config.model,
+        inputTokens: estimateTokens(userText),
+        outputTokens: 0,
+        sessionId: conversationId,
+        promptPreview: userText.slice(0, 100),
+        duration: Date.now() - startTime,
+        success: false,
+      })
     } finally {
       setIsLoading(false)
     }

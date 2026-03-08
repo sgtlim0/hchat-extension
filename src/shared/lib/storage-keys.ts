@@ -15,4 +15,7 @@ export const STORAGE_KEYS = {
   HIGHLIGHTS_PREFIX: 'hchat:highlights:',
   CLIPBOARD_HISTORY: 'hchat:clipboard-history',
   KNOWLEDGE: 'hchat:knowledge',
+  USAGE: 'hchat:usage',
+  AUDIT_LOGS: 'hchat:audit-logs',
+  TEMPLATES: 'hchat:templates',
 } as const

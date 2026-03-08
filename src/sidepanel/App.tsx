@@ -25,12 +25,20 @@ import { VoicePanel } from '@/widgets/voice-panel/VoicePanel'
 import { ChainPanel } from '@/widgets/chain-panel/ChainPanel'
 import { KnowledgePanel } from '@/widgets/knowledge-panel/KnowledgePanel'
 import { AgentPanel } from '@/widgets/agent-panel/AgentPanel'
+import { UsagePanel } from '@/widgets/usage-panel/UsagePanel'
+import { AuditPanel } from '@/widgets/audit-panel/AuditPanel'
+import { SyncPanel } from '@/widgets/sync-panel/SyncPanel'
+import { TemplatePanel } from '@/widgets/template-panel/TemplatePanel'
+import { ProviderPanel } from '@/widgets/provider-panel/ProviderPanel'
+import { useUsageStore } from '@/entities/usage/usage.store'
+import { useAuditStore } from '@/entities/audit/audit.store'
+import { useTemplateStore } from '@/entities/template/template.store'
 import { STORAGE_KEYS } from '@/shared/lib/storage-keys'
 import type { PendingPrompt } from '@/shared/types/chrome-messages'
 import '../styles/global.css'
 
 type Tab = 'chat' | 'memory' | 'scheduler' | 'swarm'
-type ToolView = 'highlight' | 'reading' | 'translate' | 'clipboard' | 'youtube' | 'email' | 'codeReview' | 'pdf' | 'social' | 'screenshot' | 'voice' | 'chain' | 'knowledge' | 'agentTool' | null
+type ToolView = 'highlight' | 'reading' | 'translate' | 'clipboard' | 'youtube' | 'email' | 'codeReview' | 'pdf' | 'social' | 'screenshot' | 'voice' | 'chain' | 'knowledge' | 'agentTool' | 'usage' | 'audit' | 'sync' | 'templates' | 'providers' | null
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'chat', label: '채팅' },
@@ -67,10 +75,14 @@ export function App() {
   const hydrateConfig = useConfigStore((s) => s.hydrate)
   const updateConfig = useConfigStore((s) => s.updateConfig)
 
+  const hydrateUsage = useUsageStore((s) => s.hydrate)
+  const hydrateAudit = useAuditStore((s) => s.hydrate)
+  const hydrateTemplates = useTemplateStore((s) => s.hydrate)
+
   // Hydration
   useEffect(() => {
-    Promise.all([hydrateConfig(), hydrateSession()])
-  }, [hydrateConfig, hydrateSession])
+    Promise.all([hydrateConfig(), hydrateSession(), hydrateUsage(), hydrateAudit(), hydrateTemplates()])
+  }, [hydrateConfig, hydrateSession, hydrateUsage, hydrateAudit, hydrateTemplates])
 
   // FAB/Popup pending prompt 감지
   const checkPendingPrompt = useCallback(() => {
@@ -186,6 +198,7 @@ export function App() {
           <SettingsView
             darkMode={darkMode}
             onToggleDarkMode={() => updateConfig({ darkMode: !darkMode })}
+            onOpenProviders={() => { setShowSettings(false); setToolView('providers') }}
           />
         </div>
       </div>
@@ -222,6 +235,11 @@ export function App() {
           {toolView === 'chain' && <ChainPanel onClose={() => setToolView(null)} />}
           {toolView === 'knowledge' && <KnowledgePanel onClose={() => setToolView(null)} />}
           {toolView === 'agentTool' && <AgentPanel onClose={() => setToolView(null)} />}
+          {toolView === 'usage' && <UsagePanel onClose={() => setToolView(null)} />}
+          {toolView === 'audit' && <AuditPanel onClose={() => setToolView(null)} />}
+          {toolView === 'sync' && <SyncPanel onClose={() => setToolView(null)} />}
+          {toolView === 'templates' && <TemplatePanel onClose={() => setToolView(null)} />}
+          {toolView === 'providers' && <ProviderPanel onClose={() => setToolView(null)} />}
         </div>
       </div>
     )
@@ -310,6 +328,27 @@ export function App() {
                 <button className="more-menu-item" onClick={() => { setToolView('agentTool'); setShowMore(false) }}>
                   <span className="more-menu-item-icon">&#129302;</span>
                   <span>Agent Tools</span>
+                </button>
+                <div className="more-menu-divider" />
+                <button className="more-menu-item" onClick={() => { setToolView('usage'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#128200;</span>
+                  <span>Usage Tracking</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('audit'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#128203;</span>
+                  <span>Audit Logs</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('sync'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#128259;</span>
+                  <span>Sync</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('templates'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#128221;</span>
+                  <span>Prompt Library</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('providers'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#9889;</span>
+                  <span>Providers</span>
                 </button>
               </div>
             </>

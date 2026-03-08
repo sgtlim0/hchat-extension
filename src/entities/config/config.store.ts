@@ -4,6 +4,8 @@ import { create } from 'zustand'
 import { Storage } from '@/lib/storage'
 import { STORAGE_KEYS } from '@/shared/lib/storage-keys'
 
+export type DefaultProvider = 'bedrock' | 'openai' | 'gemini'
+
 export interface ConfigState {
   awsAccessKeyId: string
   awsSecretAccessKey: string
@@ -11,6 +13,9 @@ export interface ConfigState {
   model: string
   darkMode: boolean
   triggerWord: string
+  openaiApiKey: string
+  geminiApiKey: string
+  defaultProvider: DefaultProvider
   loaded: boolean
 
   updateConfig: (patch: Partial<Omit<ConfigState, 'loaded' | 'updateConfig' | 'hydrate'>>) => Promise<void>
@@ -24,6 +29,9 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
   model: 'us.anthropic.claude-sonnet-4-6',
   darkMode: false,
   triggerWord: '@H',
+  openaiApiKey: '',
+  geminiApiKey: '',
+  defaultProvider: 'bedrock' as DefaultProvider,
   loaded: false,
 
   updateConfig: async (patch) => {
@@ -36,6 +44,9 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
       model: s.model,
       darkMode: s.darkMode,
       triggerWord: s.triggerWord,
+      openaiApiKey: s.openaiApiKey,
+      geminiApiKey: s.geminiApiKey,
+      defaultProvider: s.defaultProvider,
     }
     await Storage.set(STORAGE_KEYS.CONFIG, data)
 
@@ -66,6 +77,9 @@ export const useConfigStore = create<ConfigState>((set, get) => ({
       model: string
       darkMode: boolean
       triggerWord: string
+      openaiApiKey?: string
+      geminiApiKey?: string
+      defaultProvider?: DefaultProvider
     }>(STORAGE_KEYS.CONFIG)
 
     if (saved) {

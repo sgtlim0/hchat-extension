@@ -6,9 +6,10 @@ import { signRequest } from '../lib/aws-sigv4'
 interface SettingsViewProps {
   darkMode: boolean
   onToggleDarkMode: () => void
+  onOpenProviders?: () => void
 }
 
-export function SettingsView({ darkMode, onToggleDarkMode }: SettingsViewProps) {
+export function SettingsView({ darkMode, onToggleDarkMode, onOpenProviders }: SettingsViewProps) {
   const { config, updateConfig } = useConfig()
   const [saved, setSaved] = useState(false)
   const [draft, setDraft] = useState({ ...config })
@@ -139,6 +140,21 @@ export function SettingsView({ darkMode, onToggleDarkMode }: SettingsViewProps) 
           ))}
         </select>
       </div>
+
+      {/* Provider Management Link */}
+      {onOpenProviders && (
+        <div className="settings-section">
+          <button
+            className="btn-ghost btn-full"
+            onClick={onOpenProviders}
+            style={{ textAlign: 'left', display: 'flex', alignItems: 'center', gap: 8 }}
+          >
+            <span style={{ fontSize: 14 }}>&#9889;</span>
+            <span>프로바이더 관리 (OpenAI, Gemini)</span>
+            <span style={{ marginLeft: 'auto', color: 'var(--text-tertiary)' }}>&gt;</span>
+          </button>
+        </div>
+      )}
 
       {/* Save Button */}
       <button
