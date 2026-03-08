@@ -264,6 +264,106 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
     return true
   }
 
+  // ── B-1: DOM 액션 실행 (Web Autopilot) ──
+  if (msg.type === 'execute-dom-action') {
+    const action = msg.action as { action: string; selector?: string; value?: string; delay?: number }
+    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+      const tabId = tabs[0]?.id
+      if (!tabId) {
+        sendResponse({ success: false, message: 'No active tab' })
+        return
+      }
+      try {
+        const results = await chrome.scripting.executeScript({
+          target: { tabId },
+          func: (act: { action: string; selector?: string; value?: string; delay?: number }) => {
+            try {
+              if (act.action === 'wait') {
+                return { success: true, message: `Waited ${act.delay ?? 500}ms` }
+              }
+              if (act.action === 'navigate') {
+                if (act.value) window.location.href = act.value
+                return { success: true, message: `Navigating to ${act.value}` }
+              }
+              if (act.action === 'scroll') {
+                const dir = act.value === 'up' ? -300 : 300
+                window.scrollBy({ top: dir, behavior: 'smooth' })
+                return { success: true, message: `Scrolled ${act.value ?? 'down'}` }
+              }
+              if (!act.selector) {
+                return { success: false, message: 'No selector provided' }
+              }
+              const el = document.querySelector(act.selector) as HTMLElement | null
+              if (!el) {
+                return { success: false, message: `Element not found: ${act.selector}` }
+              }
+              if (act.action === 'click') {
+                el.click()
+                return { success: true, message: `Clicked ${act.selector}` }
+              }
+              if (act.action === 'type') {
+                if (el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement) {
+                  el.focus()
+                  el.value = act.value ?? ''
+                  el.dispatchEvent(new Event('input', { bubbles: true }))
+                  el.dispatchEvent(new Event('change', { bubbles: true }))
+                } else {
+                  el.textContent = act.value ?? ''
+                }
+                return { success: true, message: `Typed in ${act.selector}` }
+              }
+              return { success: false, message: `Unknown action: ${act.action}` }
+            } catch (err) {
+              return { success: false, message: String(err) }
+            }
+          },
+          args: [action],
+        })
+        const result = results[0]?.result ?? { success: false, message: 'No result' }
+        // wait 액션의 경우 실제 딜레이
+        if (action.action === 'wait') {
+          await new Promise((r) => setTimeout(r, action.delay ?? 500))
+        }
+        sendResponse(result)
+      } catch (err) {
+        sendResponse({ success: false, message: err instanceof Error ? err.message : 'Execution failed' })
+      }
+    })
+    return true
+  }
+
+  // ── B-3: 여러 탭 텍스트 수집 (Multi-Tab Research) ──
+  if (msg.type === 'get-tab-texts') {
+    const tabIds = (msg.tabIds ?? []) as number[]
+    ;(async () => {
+      const texts: Array<{ tabId: number; title: string; url: string; text: string }> = []
+      for (const id of tabIds) {
+        try {
+          const results = await chrome.scripting.executeScript({
+            target: { tabId: id },
+            func: () => {
+              const el = document.querySelector('article') ?? document.querySelector('main') ?? document.body
+              const text = el.innerText.replace(/\n{3,}/g, '\n\n').trim()
+              return {
+                title: document.title,
+                url: location.href,
+                text: text.slice(0, 6000),
+              }
+            },
+          })
+          const data = results[0]?.result
+          if (data) {
+            texts.push({ tabId: id, ...data })
+          }
+        } catch {
+          // 해당 탭에서 스크립트 실행 실패 (chrome:// 등) — 건너뜀
+        }
+      }
+      sendResponse({ texts })
+    })()
+    return true
+  }
+
   // 사이드패널/팝업에서 현재 탭의 페이지 텍스트 요청
   if (msg.type === 'get-page-text') {
     chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {

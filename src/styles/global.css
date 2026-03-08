@@ -2640,6 +2640,221 @@ body {
   color: var(--text-tertiary); font-size: 8px;
 }
 
+/* ── Autopilot Panel ─────────────────────────── */
+.autopilot-tabs {
+  display: flex; gap: 0; border-bottom: 1px solid var(--border); padding: 0 12px;
+}
+.autopilot-tab {
+  flex: 1; padding: 8px 4px; font-size: 11px; font-weight: 500;
+  color: var(--text-secondary); background: none; border: none;
+  border-bottom: 2px solid transparent; cursor: pointer;
+  transition: all 0.15s ease;
+}
+.autopilot-tab:hover { color: var(--text-primary); }
+.autopilot-tab-active {
+  color: var(--primary); border-bottom-color: var(--primary);
+}
+.autopilot-content {
+  padding: 12px; display: flex; flex-direction: column; gap: 10px;
+  overflow-y: auto; flex: 1;
+}
+.autopilot-input-section {
+  display: flex; flex-direction: column; gap: 6px;
+}
+.autopilot-actions {
+  display: flex; flex-direction: column; gap: 8px;
+}
+.autopilot-actions-header {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.autopilot-label {
+  font-size: 11px; font-weight: 600; color: var(--text-secondary);
+}
+.autopilot-steps {
+  display: flex; flex-direction: column; gap: 4px;
+}
+.autopilot-step {
+  display: flex; align-items: flex-start; gap: 6px; padding: 6px 8px;
+  border-radius: 6px; font-size: 11px; background: var(--bg-card);
+  border: 1px solid var(--border);
+}
+.autopilot-step-success { border-color: var(--success); background: rgba(34,197,94,0.05); }
+.autopilot-step-fail { border-color: var(--danger); background: rgba(239,68,68,0.05); }
+.autopilot-step-icon { font-size: 12px; flex-shrink: 0; margin-top: 1px; }
+.autopilot-step-text { color: var(--text-primary); word-break: break-all; }
+.autopilot-step-err { color: var(--danger); font-size: 10px; display: block; margin-top: 2px; }
+.autopilot-save {
+  display: flex; gap: 6px; align-items: center;
+  padding-top: 8px; border-top: 1px solid var(--border);
+}
+.autopilot-save .field-input-sm { flex: 1; }
+.autopilot-empty {
+  text-align: center; color: var(--text-tertiary); font-size: 12px; padding: 24px 0;
+}
+.autopilot-macro-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; border-radius: 6px; background: var(--bg-card);
+  border: 1px solid var(--border);
+}
+.autopilot-macro-info {
+  display: flex; flex-direction: column; gap: 2px;
+}
+.autopilot-macro-name {
+  font-size: 12px; font-weight: 500; color: var(--text-primary);
+}
+.autopilot-macro-meta {
+  font-size: 10px; color: var(--text-tertiary);
+}
+.autopilot-macro-actions {
+  display: flex; gap: 4px;
+}
+.autopilot-delete { color: var(--danger) !important; }
+
+/* ── Research Panel ──────────────────────────── */
+.research-section {
+  padding: 12px;
+}
+.research-tabs {
+  padding: 0 12px 12px; display: flex; flex-direction: column; gap: 6px;
+}
+.research-tabs-header {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.research-label {
+  font-size: 11px; font-weight: 600; color: var(--text-secondary);
+}
+.research-tab-list {
+  display: flex; flex-direction: column; gap: 4px;
+  max-height: 200px; overflow-y: auto;
+}
+.research-tab-item {
+  display: flex; align-items: flex-start; gap: 8px; padding: 6px 8px;
+  border-radius: 6px; background: var(--bg-card); border: 1px solid var(--border);
+  cursor: pointer; transition: background 0.15s;
+}
+.research-tab-item:hover { background: var(--bg-hover); }
+.research-checkbox {
+  margin-top: 2px; accent-color: var(--primary); flex-shrink: 0;
+}
+.research-tab-info {
+  display: flex; flex-direction: column; gap: 1px; min-width: 0;
+}
+.research-tab-title {
+  font-size: 11px; font-weight: 500; color: var(--text-primary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.research-tab-url {
+  font-size: 10px; color: var(--text-tertiary);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.research-actions {
+  display: flex; gap: 6px; padding: 0 12px 12px;
+}
+.research-result {
+  margin: 0 12px 12px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg-card); overflow: hidden;
+}
+.research-result-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 10px; border-bottom: 1px solid var(--border);
+}
+.research-result-label {
+  font-size: 11px; font-weight: 600; color: var(--text-secondary);
+}
+.research-result-content {
+  padding: 10px; font-size: 12px; color: var(--text-primary);
+  white-space: pre-wrap; word-break: break-word;
+  max-height: 400px; overflow-y: auto; line-height: 1.5;
+}
+.research-empty {
+  text-align: center; color: var(--text-tertiary); font-size: 12px; padding: 24px 0;
+}
+.research-saved-overlay {
+  padding: 12px; display: flex; flex-direction: column; gap: 8px;
+  border-bottom: 1px solid var(--border); background: var(--bg-card);
+}
+.research-saved-header {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.research-saved-title {
+  font-size: 12px; font-weight: 600; color: var(--text-primary);
+}
+.research-saved-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 6px 8px; border-radius: 6px; background: var(--bg-page);
+  border: 1px solid var(--border);
+}
+.research-saved-meta {
+  display: flex; flex-direction: column; gap: 1px;
+}
+.research-saved-type {
+  font-size: 11px; font-weight: 500; color: var(--text-primary);
+}
+.research-saved-info {
+  font-size: 10px; color: var(--text-tertiary);
+}
+
+/* ── Annotate Panel ──────────────────────────── */
+.annotate-toolbar {
+  display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+  border-bottom: 1px solid var(--border); flex-wrap: wrap;
+}
+.annotate-tools {
+  display: flex; gap: 2px;
+}
+.annotate-tool-btn {
+  width: 30px; height: 30px; border-radius: 6px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; background: none; border: 1px solid var(--border);
+  color: var(--text-secondary); cursor: pointer; transition: all 0.15s;
+}
+.annotate-tool-btn:hover { background: var(--bg-hover); }
+.annotate-tool-active {
+  background: var(--primary-dim); border-color: var(--primary);
+  color: var(--primary);
+}
+.annotate-colors {
+  display: flex; gap: 4px;
+}
+.annotate-color-btn {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid transparent; cursor: pointer;
+  transition: border-color 0.15s;
+}
+.annotate-color-btn:hover { opacity: 0.8; }
+.annotate-color-active {
+  border-color: var(--text-primary); box-shadow: 0 0 0 1px var(--bg-page);
+}
+.annotate-width {
+  margin-left: auto;
+}
+.annotate-width-select {
+  font-size: 11px; padding: 2px 6px; border-radius: 4px;
+  border: 1px solid var(--border); background: var(--bg-input);
+  color: var(--text-primary); cursor: pointer;
+}
+.annotate-actions {
+  display: flex; gap: 6px; padding: 8px 12px;
+}
+.annotate-canvas-wrapper {
+  flex: 1; overflow: auto; padding: 0 12px 12px;
+  min-height: 200px; position: relative;
+}
+.annotate-canvas {
+  border-radius: 8px; border: 1px solid var(--border);
+  cursor: crosshair; max-width: 100%;
+}
+.annotate-placeholder {
+  display: flex; align-items: center; justify-content: center;
+  height: 200px; color: var(--text-tertiary); font-size: 12px;
+  text-align: center; padding: 20px;
+}
+.annotate-text-input {
+  padding: 8px 12px; background: var(--bg-card);
+  border: 1px solid var(--primary); border-radius: 8px;
+  margin: 0 12px 8px;
+}
+
 /* ── Scrollbars ──────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }

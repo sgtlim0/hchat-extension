@@ -30,6 +30,9 @@ import { AuditPanel } from '@/widgets/audit-panel/AuditPanel'
 import { SyncPanel } from '@/widgets/sync-panel/SyncPanel'
 import { TemplatePanel } from '@/widgets/template-panel/TemplatePanel'
 import { ProviderPanel } from '@/widgets/provider-panel/ProviderPanel'
+import { AutopilotPanel } from '@/widgets/autopilot-panel/AutopilotPanel'
+import { ResearchPanel } from '@/widgets/research-panel/ResearchPanel'
+import { AnnotatePanel } from '@/widgets/annotate-panel/AnnotatePanel'
 import { useUsageStore } from '@/entities/usage/usage.store'
 import { useAuditStore } from '@/entities/audit/audit.store'
 import { useTemplateStore } from '@/entities/template/template.store'
@@ -38,7 +41,7 @@ import type { PendingPrompt } from '@/shared/types/chrome-messages'
 import '../styles/global.css'
 
 type Tab = 'chat' | 'memory' | 'scheduler' | 'swarm'
-type ToolView = 'highlight' | 'reading' | 'translate' | 'clipboard' | 'youtube' | 'email' | 'codeReview' | 'pdf' | 'social' | 'screenshot' | 'voice' | 'chain' | 'knowledge' | 'agentTool' | 'usage' | 'audit' | 'sync' | 'templates' | 'providers' | null
+type ToolView = 'highlight' | 'reading' | 'translate' | 'clipboard' | 'youtube' | 'email' | 'codeReview' | 'pdf' | 'social' | 'screenshot' | 'voice' | 'chain' | 'knowledge' | 'agentTool' | 'usage' | 'audit' | 'sync' | 'templates' | 'providers' | 'autopilot' | 'research' | 'annotate' | null
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'chat', label: '채팅' },
@@ -240,6 +243,9 @@ export function App() {
           {toolView === 'sync' && <SyncPanel onClose={() => setToolView(null)} />}
           {toolView === 'templates' && <TemplatePanel onClose={() => setToolView(null)} />}
           {toolView === 'providers' && <ProviderPanel onClose={() => setToolView(null)} />}
+          {toolView === 'autopilot' && <AutopilotPanel onClose={() => setToolView(null)} />}
+          {toolView === 'research' && <ResearchPanel onClose={() => setToolView(null)} />}
+          {toolView === 'annotate' && <AnnotatePanel onClose={() => setToolView(null)} />}
         </div>
       </div>
     )
@@ -349,6 +355,19 @@ export function App() {
                 <button className="more-menu-item" onClick={() => { setToolView('providers'); setShowMore(false) }}>
                   <span className="more-menu-item-icon">&#9889;</span>
                   <span>Providers</span>
+                </button>
+                <div className="more-menu-divider" />
+                <button className="more-menu-item" onClick={() => { setToolView('autopilot'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#9881;</span>
+                  <span>Web Autopilot</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('research'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#128269;</span>
+                  <span>Multi-Tab Research</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('annotate'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#9998;</span>
+                  <span>Annotate</span>
                 </button>
               </div>
             </>
