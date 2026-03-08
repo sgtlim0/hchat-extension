@@ -6,6 +6,8 @@ import { Storage } from '../lib/storage'
 import { signRequest } from '../lib/aws-sigv4'
 
 const ALARM_PREFIX = 'hchat-task-'
+const WATCHER_ALARM = 'hchat-watcher-check'
+const DIGEST_ALARM = 'hchat-digest-daily'
 const DEFAULT_MODEL = 'us.anthropic.claude-sonnet-4-6'
 const DEFAULT_REGION = 'us-east-1'
 
@@ -13,16 +15,46 @@ const DEFAULT_REGION = 'us-east-1'
 chrome.runtime.onInstalled.addListener(async () => {
   console.log('[HChat] Extension installed, restoring alarms...')
   await Scheduler.restoreAllAlarms()
+  // Restore watcher alarm
+  await restoreWatcherAlarm()
 })
 
 // Service Worker 재시작 시에도 알람 복원
 chrome.runtime.onStartup.addListener(async () => {
   console.log('[HChat] Browser started, restoring alarms...')
   await Scheduler.restoreAllAlarms()
+  await restoreWatcherAlarm()
 })
+
+// ── Watcher 알람 복원 헬퍼 ────────────────────
+async function restoreWatcherAlarm() {
+  const watchers = await Storage.get<Array<{ enabled: boolean; interval: number }>>('hchat:watchers')
+  if (watchers && watchers.some((w) => w.enabled)) {
+    const minInterval = Math.max(1, Math.min(...watchers.filter((w) => w.enabled).map((w) => w.interval)))
+    chrome.alarms.create(WATCHER_ALARM, { periodInMinutes: minInterval })
+    console.log('[HChat] Watcher alarm restored, interval:', minInterval, 'min')
+  }
+}
 
 // ── 알람 이벤트 처리 ─────────────────────────
 chrome.alarms.onAlarm.addListener(async (alarm) => {
+  // Watcher alarm: check watched pages
+  if (alarm.name === WATCHER_ALARM) {
+    await checkWatchTargets()
+    return
+  }
+
+  // Digest alarm: notify for daily briefing
+  if (alarm.name === DIGEST_ALARM) {
+    chrome.notifications.create({
+      type: 'basic',
+      iconUrl: '/icons/icon48.png',
+      title: 'H Chat Daily Digest',
+      message: 'Your daily briefing is ready. Open H Chat to view.',
+    })
+    return
+  }
+
   if (!alarm.name.startsWith(ALARM_PREFIX)) return
 
   const taskId = alarm.name.slice(ALARM_PREFIX.length)
@@ -98,6 +130,77 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
     console.error('[HChat] Task execution failed:', err)
   }
 })
+
+// ── Page Watcher: 주기적 페이지 체크 ───────────
+interface WatchTarget {
+  id: string
+  url: string
+  selector?: string
+  interval: number
+  lastContent: string
+  lastChecked: number
+  enabled: boolean
+  label: string
+  changed: boolean
+  diff?: string
+}
+
+async function checkWatchTargets() {
+  const watchers = await Storage.get<WatchTarget[]>('hchat:watchers')
+  if (!watchers || watchers.length === 0) return
+
+  const now = Date.now()
+  let updated = false
+
+  const newWatchers = await Promise.all(
+    watchers.map(async (target) => {
+      if (!target.enabled) return target
+      // Check if interval has elapsed
+      if (target.lastChecked && now - target.lastChecked < target.interval * 60 * 1000 * 0.9) {
+        return target
+      }
+
+      try {
+        const res = await fetch(target.url)
+        const html = await res.text()
+        // Simple text extraction from HTML
+        const textMatch = html.replace(/<script[\s\S]*?<\/script>/gi, '')
+          .replace(/<style[\s\S]*?<\/style>/gi, '')
+          .replace(/<[^>]+>/g, ' ')
+          .replace(/\s+/g, ' ')
+          .trim()
+          .slice(0, 5000)
+
+        const content = target.selector ? textMatch : textMatch
+        const changed = target.lastContent !== '' && content !== target.lastContent
+
+        if (changed) {
+          chrome.notifications.create({
+            type: 'basic',
+            iconUrl: '/icons/icon48.png',
+            title: `Page Changed: ${target.label}`,
+            message: `Changes detected on ${target.url.slice(0, 60)}`,
+          })
+        }
+
+        updated = true
+        return {
+          ...target,
+          lastContent: content,
+          lastChecked: now,
+          changed,
+          diff: changed ? `Content changed at ${new Date(now).toLocaleString()}` : target.diff,
+        }
+      } catch {
+        return { ...target, lastChecked: now }
+      }
+    })
+  )
+
+  if (updated) {
+    await Storage.set('hchat:watchers', newWatchers)
+  }
+}
 
 // ── 컨텍스트 스택 (최근 5개 탭 추적) ────────────
 const CONTEXT_STACK_KEY = 'hchat:context-stack'
@@ -262,6 +365,32 @@ chrome.runtime.onMessage.addListener((msg, sender, sendResponse) => {
         sendResponse({ results: `Search failed for "${query}"` })
       })
     return true
+  }
+
+  // Digest alarm 설정/해제
+  if (msg.type === 'set-digest-alarm') {
+    if (msg.enabled) {
+      // Calculate minutes until next 09:00
+      const now = new Date()
+      const target = new Date(now)
+      target.setHours(9, 0, 0, 0)
+      if (target.getTime() <= now.getTime()) {
+        target.setDate(target.getDate() + 1)
+      }
+      const delayMinutes = (target.getTime() - now.getTime()) / 60000
+      chrome.alarms.create(DIGEST_ALARM, { delayInMinutes: delayMinutes, periodInMinutes: 24 * 60 })
+      console.log('[HChat] Digest alarm set, next in', Math.round(delayMinutes), 'min')
+    } else {
+      chrome.alarms.clear(DIGEST_ALARM)
+      console.log('[HChat] Digest alarm cleared')
+    }
+    return
+  }
+
+  // Watcher alarm 업데이트 (감시 대상 변경 시)
+  if (msg.type === 'update-watcher-alarm') {
+    restoreWatcherAlarm()
+    return
   }
 
   // 사이드패널/팝업에서 현재 탭의 페이지 텍스트 요청

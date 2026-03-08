@@ -18,4 +18,7 @@ export const STORAGE_KEYS = {
   USAGE: 'hchat:usage',
   AUDIT_LOGS: 'hchat:audit-logs',
   TEMPLATES: 'hchat:templates',
+  WATCHERS: 'hchat:watchers',
+  DIGEST_DATA: 'hchat:digest-data',
+  DIGEST_SETTINGS: 'hchat:digest-settings',
 } as const
