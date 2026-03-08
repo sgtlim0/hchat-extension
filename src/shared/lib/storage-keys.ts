@@ -18,4 +18,6 @@ export const STORAGE_KEYS = {
   USAGE: 'hchat:usage',
   AUDIT_LOGS: 'hchat:audit-logs',
   TEMPLATES: 'hchat:templates',
+  CODE_VAULT: 'hchat:code-vault',
+  PERSONAS: 'hchat:personas',
 } as const

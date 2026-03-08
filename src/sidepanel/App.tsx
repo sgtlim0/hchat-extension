@@ -30,15 +30,18 @@ import { AuditPanel } from '@/widgets/audit-panel/AuditPanel'
 import { SyncPanel } from '@/widgets/sync-panel/SyncPanel'
 import { TemplatePanel } from '@/widgets/template-panel/TemplatePanel'
 import { ProviderPanel } from '@/widgets/provider-panel/ProviderPanel'
+import { CodeVaultPanel } from '@/widgets/code-vault/CodeVault'
+import { PersonaPanel } from '@/widgets/persona-panel/PersonaPanel'
 import { useUsageStore } from '@/entities/usage/usage.store'
 import { useAuditStore } from '@/entities/audit/audit.store'
 import { useTemplateStore } from '@/entities/template/template.store'
+import { usePersonaStore } from '@/entities/persona/persona.store'
 import { STORAGE_KEYS } from '@/shared/lib/storage-keys'
 import type { PendingPrompt } from '@/shared/types/chrome-messages'
 import '../styles/global.css'
 
 type Tab = 'chat' | 'memory' | 'scheduler' | 'swarm'
-type ToolView = 'highlight' | 'reading' | 'translate' | 'clipboard' | 'youtube' | 'email' | 'codeReview' | 'pdf' | 'social' | 'screenshot' | 'voice' | 'chain' | 'knowledge' | 'agentTool' | 'usage' | 'audit' | 'sync' | 'templates' | 'providers' | null
+type ToolView = 'highlight' | 'reading' | 'translate' | 'clipboard' | 'youtube' | 'email' | 'codeReview' | 'pdf' | 'social' | 'screenshot' | 'voice' | 'chain' | 'knowledge' | 'agentTool' | 'usage' | 'audit' | 'sync' | 'templates' | 'providers' | 'codeVault' | 'persona' | null
 
 const tabs: { id: Tab; label: string }[] = [
   { id: 'chat', label: '채팅' },
@@ -78,11 +81,13 @@ export function App() {
   const hydrateUsage = useUsageStore((s) => s.hydrate)
   const hydrateAudit = useAuditStore((s) => s.hydrate)
   const hydrateTemplates = useTemplateStore((s) => s.hydrate)
+  const hydratePersonas = usePersonaStore((s) => s.hydrate)
+  const defaultPersona = usePersonaStore((s) => s.getDefault)
 
   // Hydration
   useEffect(() => {
-    Promise.all([hydrateConfig(), hydrateSession(), hydrateUsage(), hydrateAudit(), hydrateTemplates()])
-  }, [hydrateConfig, hydrateSession, hydrateUsage, hydrateAudit, hydrateTemplates])
+    Promise.all([hydrateConfig(), hydrateSession(), hydrateUsage(), hydrateAudit(), hydrateTemplates(), hydratePersonas()])
+  }, [hydrateConfig, hydrateSession, hydrateUsage, hydrateAudit, hydrateTemplates, hydratePersonas])
 
   // FAB/Popup pending prompt 감지
   const checkPendingPrompt = useCallback(() => {
@@ -240,6 +245,8 @@ export function App() {
           {toolView === 'sync' && <SyncPanel onClose={() => setToolView(null)} />}
           {toolView === 'templates' && <TemplatePanel onClose={() => setToolView(null)} />}
           {toolView === 'providers' && <ProviderPanel onClose={() => setToolView(null)} />}
+          {toolView === 'codeVault' && <CodeVaultPanel onClose={() => setToolView(null)} />}
+          {toolView === 'persona' && <PersonaPanel onClose={() => setToolView(null)} />}
         </div>
       </div>
     )
@@ -253,6 +260,9 @@ export function App() {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
           </svg>
+        </button>
+        <button className="header-btn persona-header-btn" onClick={() => setToolView('persona')} title={`Persona: ${defaultPersona()?.name ?? 'None'}`}>
+          <span className="persona-header-icon">{defaultPersona()?.icon ?? '\u{1F916}'}</span>
         </button>
         <span className="header-title">H Chat</span>
         <div className="header-spacer" />
@@ -349,6 +359,15 @@ export function App() {
                 <button className="more-menu-item" onClick={() => { setToolView('providers'); setShowMore(false) }}>
                   <span className="more-menu-item-icon">&#9889;</span>
                   <span>Providers</span>
+                </button>
+                <div className="more-menu-divider" />
+                <button className="more-menu-item" onClick={() => { setToolView('codeVault'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#60;/&#62;</span>
+                  <span>Code Vault</span>
+                </button>
+                <button className="more-menu-item" onClick={() => { setToolView('persona'); setShowMore(false) }}>
+                  <span className="more-menu-item-icon">&#128100;</span>
+                  <span>Persona Switch</span>
                 </button>
               </div>
             </>

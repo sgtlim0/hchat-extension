@@ -6,6 +6,7 @@ import { chat, type Message } from '../lib/claude'
 import { useUsageStore, estimateTokens } from '@/entities/usage/usage.store'
 import { useAuditStore } from '@/entities/audit/audit.store'
 import { MemoryStore } from '../lib/memory'
+import { usePersonaStore } from '@/entities/persona/persona.store'
 import { CommandPalette } from '@/widgets/command-palette/CommandPalette'
 import { ContextStack } from '@/widgets/context-stack/ContextStack'
 import { findCommand } from '@/widgets/command-palette/commands'
@@ -132,7 +133,12 @@ export function ChatView({
     const startTime = Date.now()
 
     try {
+      const persona = usePersonaStore.getState().getDefault()
+      const personaPrompt = persona?.systemPrompt
+        ? persona.systemPrompt + '\n\n'
+        : ''
       const systemPrompt =
+        personaPrompt +
         '당신은 도움이 되는 AI 어시스턴트입니다.' +
         (await MemoryStore.toSystemPrompt(conversationId))
 
